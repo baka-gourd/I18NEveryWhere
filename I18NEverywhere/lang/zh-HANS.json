@@ -1,0 +1,14 @@
+{
+  "Options.SECTION[I18NEverywhere.I18NEverywhere.I18NEverywhere]": "国际化",
+  "Options.TAB[I18NEverywhere.I18NEverywhere.I18NEverywhere.General]": "通用",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.Overwrite]": "重写",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.Overwrite]": "使用模组内置的语言覆盖原本的语言",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanLocalModDirectory]": "强制扫描本地 Mod 目录",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanLocalModDirectory]": "强制扫描 <CSII_USERDATAPATH>/Mods, 常使用于开发本地 Mod",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanPModDirectory]": "强制扫描 Paradox Mod 目录",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanPModDirectory]": "强制扫描 <CSII_USERDATAPATH>/.cache/Mods/mods_subscribed, 常使用于本模组按本地 Mod 加载时",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
+  "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "国际化",
+  "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "本地化已加载"
+}
