@@ -86,5 +86,4 @@ Keeps authors from being overwhelmed by
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
-  <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEverywhere.Localization" />
 </Publish>
