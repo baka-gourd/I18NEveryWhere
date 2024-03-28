@@ -45,9 +45,9 @@ Keeps authors from being overwhelmed by
   <!--Tag, can be set multiple times-->
   <Tag Value="Code Mod" />
   <!--Link to the forum post where the mod can be discussed-->
-  <ForumLink Value="" />
+  <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.6" />
+  <ModVersion Value="1.0.6-snapshot20240326" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,10 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.0.6-snapshot20240326
+
+- fix vanilla CHS translation mistakes
 
 ## 1.0.6
 
