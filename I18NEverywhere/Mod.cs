@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-
-using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -13,8 +11,6 @@ using Game;
 using Game.Modding;
 using Game.PSI;
 using Game.SceneFlow;
-using Game.UI.Localization;
-
 using HarmonyLib;
 
 using JetBrains.Annotations;
