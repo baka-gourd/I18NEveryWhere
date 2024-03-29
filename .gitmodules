@@ -1,0 +1,3 @@
+[submodule "I18NEverywhere/Localization"]
+	path = I18NEverywhere/Localization
+	url = https://github.com/baka-gourd/I18NEverywhere.Localization.git

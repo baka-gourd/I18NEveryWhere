@@ -101,11 +101,19 @@
 	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
-	<ItemGroup>
+  <Target Name="CopyLocalizationFolder" BeforeTargets="PreBuildEvent">
+    <ItemGroup>
+      <SomeFolder Include="Localization\project\**"
+                  Exclude="Localization\project\en-US\**"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(SomeFolder)"
+          DestinationFiles="$(OutputPath)\Localization\%(RecursiveDir)%(Filename)%(Extension)"
+          SkipUnchangedFiles="True">
+    </Copy>
+  </Target>
+
+  <ItemGroup>
 	  <Folder Include="Localization\" />
-    <Content Include="Localization\**">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
     <Folder Include="lang\" />
     <Content Include="lang\**">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

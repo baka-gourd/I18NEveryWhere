@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.6-snapshot20240326" />
+  <ModVersion Value="1.0.6-snapshot20240328" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,10 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.0.6-snapshot20240328
+
+- add Population Rebalance
 
 ## 1.0.6-snapshot20240326
 
