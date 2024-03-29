@@ -1,0 +1,14 @@
+{
+  "Options.SECTION[I18NEverywhere.I18NEverywhere.I18NEverywhere]": "國際化",
+  "Options.TAB[I18NEverywhere.I18NEverywhere.I18NEverywhere.General]": "通用",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.Overwrite]": "覆蓋",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.Overwrite]": "使用模組內建的語言覆蓋原本的語言",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanLocalModDirectory]": "強制掃描本地 Mod 目錄",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanLocalModDirectory]": "強制掃描 <CSII_USERDATAPATH>/Mods, 常用於開發本地 Mod",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanPModDirectory]": "強制掃描 Paradox Mod 目錄",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ScanPModDirectory]": "強制掃描 <CSII_USERDATAPATH>/.cache/Mods/mods_subscribed, 常使用於本模組按本地模組載入時",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "當查詢在地化時印出鍵值(Key)",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "當查詢在地化時印出鍵值(Key)",
+  "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "國際化",
+  "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "在地化已載入"
+}
