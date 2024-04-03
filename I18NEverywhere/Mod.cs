@@ -25,8 +25,7 @@ namespace I18NEverywhere
         public static ILog Logger { get; set; } = LogManager.GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
         public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = new Dictionary<string, string>();
         public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new Dictionary<string, string>();
-        [CanBeNull] private string LocalizationsPath { get; set; }
-        [CanBeNull] private string ModsDirectoryPath { get; set; }
+        [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
 
         public static Setting Setting { get; set; }
@@ -39,9 +38,6 @@ namespace I18NEverywhere
             {
                 Logger.Info($"Current mod asset at {asset.path}");
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
-                var directoryInfo = new DirectoryInfo(Path.GetDirectoryName(asset.path) ?? "").Parent;
-                if (directoryInfo != null)
-                    ModsDirectoryPath = directoryInfo.FullName;
             }
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
@@ -82,8 +78,9 @@ namespace I18NEverywhere
             }
         }
 
-        bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
+        public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
         {
+            var restrict = Setting.Restrict;
             Logger.Info("Loading locales...");
             CurrentLocaleDictionary.Clear();
             if (string.IsNullOrEmpty(LocalizationsPath))
@@ -94,6 +91,7 @@ namespace I18NEverywhere
 
             if (reloadFallback)
             {
+                FallbackLocaleDictionary.Clear();
                 if (Directory.Exists(Path.Combine(LocalizationsPath, fallbackLocaleId)))
                 {
                     var directoryInfo = new DirectoryInfo(Path.Combine(LocalizationsPath, fallbackLocaleId));
@@ -110,8 +108,14 @@ namespace I18NEverywhere
                             {
                                 if (FallbackLocaleDictionary.ContainsKey(pair.Key))
                                 {
-                                    Logger.Warn($"{pair.Key}: overlap with existing key");
-                                    continue;
+                                    if (restrict)
+                                    {
+                                        Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                        continue;
+                                    }
+
+                                    Logger.Info($"{pair.Key}: has be modified.");
+                                    FallbackLocaleDictionary[pair.Key] = pair.Value;
                                 }
 
                                 FallbackLocaleDictionary.Add(pair.Key, pair.Value);
@@ -141,8 +145,14 @@ namespace I18NEverywhere
                         {
                             if (CurrentLocaleDictionary.ContainsKey(pair.Key))
                             {
-                                Logger.Warn($"{pair.Key}: overlap with existing key");
-                                continue;
+                                if (restrict)
+                                {
+                                    Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                    continue;
+                                }
+
+                                Logger.Info($"{pair.Key}: has be modified.");
+                                CurrentLocaleDictionary[pair.Key] = pair.Value;
                             }
 
                             CurrentLocaleDictionary.Add(pair.Key, pair.Value);
@@ -162,6 +172,8 @@ namespace I18NEverywhere
 
         private static bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
         {
+            var restrict = Setting.Restrict;
+
             foreach (var modInfo in GameManager.instance.modManager)
             {
                 if (modInfo.asset.isEnabled)
@@ -190,8 +202,14 @@ namespace I18NEverywhere
                                 {
                                     if (CurrentLocaleDictionary.ContainsKey(pair.Key))
                                     {
-                                        Logger.Warn($"{pair.Key}: overlap with existing key");
-                                        continue;
+                                        if (restrict)
+                                        {
+                                            Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                            continue;
+                                        }
+
+                                        Logger.Info($"{pair.Key}: has be modified");
+                                        CurrentLocaleDictionary[pair.Key] = pair.Value;
                                     }
 
                                     CurrentLocaleDictionary.Add(pair.Key, pair.Value);
@@ -215,13 +233,19 @@ namespace I18NEverywhere
                                             File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
                                     foreach (var pair in fallbackDict)
                                     {
-                                        if (CurrentLocaleDictionary.ContainsKey(pair.Key))
+                                        if (FallbackLocaleDictionary.ContainsKey(pair.Key))
                                         {
-                                            Logger.Warn($"{pair.Key}: overlap with existing key");
-                                            continue;
+                                            if (restrict)
+                                            {
+                                                Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                                continue;
+                                            }
+
+                                            Logger.Info($"{pair.Key}: has be modified.");
+                                            FallbackLocaleDictionary[pair.Key] = pair.Value;
                                         }
 
-                                        CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                        FallbackLocaleDictionary.Add(pair.Key, pair.Value);
                                     }
                                 }
                                 catch (Exception e)
