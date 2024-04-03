@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.0.6-snapshot20240402" />
+  <ModVersion Value="1.1.0-snapshot20240403" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,24 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.0-snapshot20240403
+
+- zh-HANS: add Water Visual Tweaks
+- zh-HANS: add Time2Work
+- ko-KR: add Depot Capacity Changer
+- ko-KR: add ExtendedRadio
+- ko-KR: add ExtraLib
+- ko-KR: add FPS_Limiter.Mod
+- ko-KR: add Move_it
+- ko-KR: add Population_Rebalance
+- ko-KR: add SchoolCapacityBalancer
+- ko-KR: add Time2Work
+
+## 1.1.0
+
+- On-demand locale load
+- Disable restrict mode by default
 
 ## 1.0.6-snapshot20240402
 
