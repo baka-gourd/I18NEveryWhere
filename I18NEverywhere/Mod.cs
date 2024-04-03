@@ -62,7 +62,7 @@ namespace I18NEverywhere
             var harmony = new Harmony("Nptr.I18nEverywhere");
             var originalMethod = typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
             var prefix = typeof(HookLocalizationDictionary).GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static);
-
+            
             harmony.Patch(originalMethod, new HarmonyMethod(prefix));
             Logger.Info("Harmony patched.");
 
@@ -160,80 +160,33 @@ namespace I18NEverywhere
             return true;
         }
 
-        bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
+        private static bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
         {
-            if (Setting.ScanLocalModDirectory)
+            foreach (var modInfo in GameManager.instance.modManager)
             {
-                var path = Environment.GetEnvironmentVariable("CSII_USERDATAPATH", EnvironmentVariableTarget.User);
-                var fullPath = Path.Combine(path ?? "", "Mods");
-                Logger.Info($"Scan {fullPath}");
-                InnerLoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback, fullPath);
-            }
-
-            if (Setting.ScanPModDirectory)
-            {
-                var path = Environment.GetEnvironmentVariable("CSII_USERDATAPATH", EnvironmentVariableTarget.User);
-                var fullPath = Path.Combine(path ?? "", ".cache/Mods/mods_subscribed");
-                Logger.Info($"Scan {fullPath}");
-                InnerLoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback, fullPath);
-            }
-
-            if (string.IsNullOrEmpty(ModsDirectoryPath))
-            {
-                Logger.Info("Cannot found mods directory.");
-                return false;
-            }
-
-            return InnerLoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback);
-        }
-
-        private bool InnerLoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true, [CanBeNull] string customPath = null)
-        {
-            var dirs = !string.IsNullOrEmpty(customPath) ? new DirectoryInfo(customPath).GetDirectories() : new DirectoryInfo(ModsDirectoryPath).GetDirectories();
-
-            foreach (var directoryInfo in dirs)
-            {
-                if (Directory.Exists(Path.Combine(directoryInfo.FullName, "lang")))
+                if (modInfo.asset.isEnabled)
                 {
-                    Logger.Info($"{directoryInfo.Name} has localization files.");
-                    var current = Path.Combine(directoryInfo.FullName, "lang", localeId + ".json");
-                    var fallback = Path.Combine(directoryInfo.FullName, "lang", fallbackLocaleId + ".json");
-                    if (File.Exists(current))
+                    var modDir = Path.GetDirectoryName(modInfo.asset.path);
+                    if (modDir == null)
                     {
-                        Logger.Info($"Load {Path.GetFileName(current)}");
-                        try
-                        {
-                            var currDict =
-                                JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(current)) ??
-                                new Dictionary<string, string>();
-                            foreach (var pair in currDict)
-                            {
-                                if (CurrentLocaleDictionary.ContainsKey(pair.Key))
-                                {
-                                    Logger.Warn($"{pair.Key}: overlap with existing key");
-                                    continue;
-                                }
-
-                                CurrentLocaleDictionary.Add(pair.Key, pair.Value);
-                            }
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e);
-                        }
+                        continue;
                     }
 
-                    if (reloadFallback)
+                    if (Directory.Exists(Path.Combine(modDir,"lang")))
                     {
-                        if (File.Exists(fallback))
+                        Logger.Info($"Load \"{modInfo.name}\"'s localization files.");
+                        var current = Path.Combine(modDir, "lang", localeId + ".json");
+                        var fallback = Path.Combine(modDir, "lang", fallbackLocaleId + ".json");
+
+                        if (File.Exists(current))
                         {
-                            Logger.Info($"Load {Path.GetFileName(fallback)}");
+                            Logger.Info($"Load {Path.GetFileName(current)}");
                             try
                             {
-                                var fallbackDict =
-                                    JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                        File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
-                                foreach (var pair in fallbackDict)
+                                var currDict =
+                                    JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(current)) ??
+                                    new Dictionary<string, string>();
+                                foreach (var pair in currDict)
                                 {
                                     if (CurrentLocaleDictionary.ContainsKey(pair.Key))
                                     {
@@ -247,6 +200,34 @@ namespace I18NEverywhere
                             catch (Exception e)
                             {
                                 Logger.Error(e);
+                            }
+                        }
+
+                        if (reloadFallback)
+                        {
+                            if (File.Exists(fallback))
+                            {
+                                Logger.Info($"Load {Path.GetFileName(fallback)}");
+                                try
+                                {
+                                    var fallbackDict =
+                                        JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                                            File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
+                                    foreach (var pair in fallbackDict)
+                                    {
+                                        if (CurrentLocaleDictionary.ContainsKey(pair.Key))
+                                        {
+                                            Logger.Warn($"{pair.Key}: overlap with existing key");
+                                            continue;
+                                        }
+
+                                        CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    }
+                                }
+                                catch (Exception e)
+                                {
+                                    Logger.Error(e);
+                                }
                             }
                         }
                     }
