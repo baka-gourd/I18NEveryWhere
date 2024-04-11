@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.0-snapshot20240403" />
+  <ModVersion Value="1.1.0-snapshot20240411" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,26 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.0-snapshot20240411
+
+- zh-HANS: rm 529 Tiles
+- zh-HANT: rm 529 Tiles
+- zh-HANS: upd Time2Work
+- zh-HANS: upd Water Features
+- zh-HANS: upd Water Visual Tweaks
+- zh-HANS: add Infinite Demand
+- zh-HANS: add Depot Capacity Changer
+- zh-HANS: add Employment Tracker
+- zh-HANS: add Weather+
+- fr-FR: upd Population Rebalance
+- fr-FR: add Infinite Demand
+- fr-FR: add Depot Capacity Changer
+- fr-FR: add Employment Tracker
+- fr-FR: add Weather+
+- fr-FR: add Time2Work
+- fr-FR: add Water Visual Tweaks
+- fr-FR: add Move it
 
 ## 1.1.0-snapshot20240403
 
