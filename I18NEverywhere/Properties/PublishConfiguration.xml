@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.0-snapshot20240411" />
+  <ModVersion Value="1.1.1" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,27 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.1
+
+- fix overlap value
+- ko-KR: upd Time2Work
+- ko-KR: upd Vanilla
+- ko-KR: add Transport Policy Adjuster
+- zh-HANS: upd Depot Capacity Changer 
+- zh-HANS: upd Employment Tracker
+- zh-HANS: upd Infinite Demand
+- zh-HANS: upd Population Rebalance
+- zh-HANS: upd Time2Work
+- zh-HANS: upd Water Visual Tweaks
+- zh-HANS: upd Weather+
+- zh-HANS: add Nice Weather
+- zh-HANS: add Extended Radio
+- fr-FR: upd Employment Tracker
+- fr-FR: upd Population Rebalance
+- fr-FR: upd Time2Work
+- fr-FR: add Nice Weather
+- fr-FR: add Extended Radio
 
 ## 1.1.0-snapshot20240411
 
