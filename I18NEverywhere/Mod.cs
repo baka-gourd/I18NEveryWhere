@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+
+using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -11,6 +13,7 @@ using Game;
 using Game.Modding;
 using Game.PSI;
 using Game.SceneFlow;
+
 using HarmonyLib;
 
 using JetBrains.Annotations;
@@ -39,13 +42,12 @@ namespace I18NEverywhere
                 Logger.Info($"Current mod asset at {asset.path}");
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
-
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete += (p, m) =>
             {
                 if (!_gameLoaded)
                 {
-                    NotificationSystem.Pop("i18n-load", delay: 5f,
+                    NotificationSystem.Pop("i18n-load", delay: 10f,
                         titleId: "I18NEverywhere",
                         textId: "I18NEverywhere.Detail",
                         progressState: ProgressState.Complete,
@@ -58,7 +60,7 @@ namespace I18NEverywhere
             var harmony = new Harmony("Nptr.I18nEverywhere");
             var originalMethod = typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
             var prefix = typeof(HookLocalizationDictionary).GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static);
-            
+
             harmony.Patch(originalMethod, new HarmonyMethod(prefix));
             Logger.Info("Harmony patched.");
 
@@ -117,8 +119,10 @@ namespace I18NEverywhere
                                     Logger.Info($"{pair.Key}: has be modified.");
                                     FallbackLocaleDictionary[pair.Key] = pair.Value;
                                 }
-
-                                FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                else
+                                {
+                                    FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                }
                             }
                         }
                         catch (Exception e)
@@ -154,8 +158,10 @@ namespace I18NEverywhere
                                 Logger.Info($"{pair.Key}: has be modified.");
                                 CurrentLocaleDictionary[pair.Key] = pair.Value;
                             }
-
-                            CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                            else
+                            {
+                                CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                            }
                         }
                     }
                     catch (Exception e)
@@ -184,7 +190,7 @@ namespace I18NEverywhere
                         continue;
                     }
 
-                    if (Directory.Exists(Path.Combine(modDir,"lang")))
+                    if (Directory.Exists(Path.Combine(modDir, "lang")))
                     {
                         Logger.Info($"Load \"{modInfo.name}\"'s localization files.");
                         var current = Path.Combine(modDir, "lang", localeId + ".json");
@@ -211,8 +217,10 @@ namespace I18NEverywhere
                                         Logger.Info($"{pair.Key}: has be modified");
                                         CurrentLocaleDictionary[pair.Key] = pair.Value;
                                     }
-
-                                    CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    else
+                                    {
+                                        CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    }
                                 }
                             }
                             catch (Exception e)
@@ -244,8 +252,10 @@ namespace I18NEverywhere
                                             Logger.Info($"{pair.Key}: has be modified.");
                                             FallbackLocaleDictionary[pair.Key] = pair.Value;
                                         }
-
-                                        FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                        else
+                                        {
+                                            FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                        }
                                     }
                                 }
                                 catch (Exception e)
