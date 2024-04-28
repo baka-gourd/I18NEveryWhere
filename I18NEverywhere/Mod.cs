@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-
-using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -179,13 +177,18 @@ namespace I18NEverywhere
         private static bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
         {
             var restrict = Setting.Restrict;
-
+            var set = new HashSet<string>();
             foreach (var modInfo in GameManager.instance.modManager)
             {
                 if (modInfo.asset.isEnabled)
                 {
                     var modDir = Path.GetDirectoryName(modInfo.asset.path);
                     if (modDir == null)
+                    {
+                        continue;
+                    }
+
+                    if (!set.Add(Path.Combine(modDir, "lang")))
                     {
                         continue;
                     }
