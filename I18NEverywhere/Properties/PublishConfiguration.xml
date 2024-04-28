@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.1" />
+  <ModVersion Value="1.1.2" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,27 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.2
+
+- prevent load loaded file
+- ko-KR : add Asset Packs Manager
+- ko-KR : add Water Visual Tweaks
+- ko-KR : add Find It
+- ko-KR : add Nice Weather
+- ko-KR : add Infinite Demand
+- ko-KR : add Cim Route Highlighter
+- ko-KR : add Weather Plus
+- ko-KR : upd Vanilla
+- ko-KR : upd Depot Capacity Changer
+- ko-KR : upd ExtendedRadio
+- ko-KR : upd FPS Limiter
+- ko-KR : upd Population_Rebalance
+- ko-KR : upd Transport Policy Adjuster
+- zh-HANS: upd Vanilla
+- zh-HANS: upd Time2Work
+- zh-HANS: add Asset Packs Manager
+- zh-HANS: upd Asset Variation Manager
 
 ## 1.1.1
 
