@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.2" />
+  <ModVersion Value="1.1.2-p20240505" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,29 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.2-p20240505
+
+- ko-KR: add GameLiteBooster
+- ko-KR: upd Time2Work
+- fr-FR: add AssetPacksManager
+- fr-FR: add AssetVariationChanger
+- fr-FR: upd DepotCapacityChanger
+- fr-FR: upd EmploymentTracker
+- fr-FR: upd ExtendedRadio
+- fr-FR: upd InfiniteDemand
+- fr-FR: upd MoveIt
+- fr-FR: upd PopulationRebalance
+- fr-FR: upd SchoolCapacityBalancer
+- fr-FR: upd Time2Work
+- fr-FR: upd WaterVisualTweaks
+- zh-HANS: add AssetPacksManager
+- zh-HANS: add AssetVariationChanger
+- zh-HANS: upd EmploymentTracker
+- zh-HANS: upd NiceWeather
+- zh-HANS: upd Time2Work
+- zh-HANS: upd Weather+
+
 
 ## 1.1.2
 
@@ -71,7 +94,7 @@ Keeps authors from being overwhelmed by
 - ko-KR : upd Depot Capacity Changer
 - ko-KR : upd ExtendedRadio
 - ko-KR : upd FPS Limiter
-- ko-KR : upd Population_Rebalance
+- ko-KR : upd Population Rebalance
 - ko-KR : upd Transport Policy Adjuster
 - zh-HANS: upd Vanilla
 - zh-HANS: upd Time2Work
