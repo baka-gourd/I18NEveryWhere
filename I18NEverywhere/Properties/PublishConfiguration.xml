@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.2-p20240505" />
+  <ModVersion Value="1.1.2-p20240512" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,26 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.2-p20240512
+
+- fr-FR: upd AssetPacksManager at 2024-05-12
+- fr-FR: upd AssetVariationChanger at 2024-05-12
+- fr-FR: add Overpopulated at 2024-05-12
+- fr-FR: upd Population_Rebalance at 2024-05-12
+- fr-FR: upd SchoolCapacityBalancer at 2024-05-12
+- fr-FR: upd Time2Work at 2024-05-12
+- zh-HANS: del ExtraLib at 2024-05-12
+- zh-HANS: upd AssetPacksManager at 2024-05-12
+- zh-HANS: upd AssetVariationChanger at 2024-05-12
+- zh-HANS: add Overpopulated at 2024-05-12
+- zh-HANS: upd Time2Work at 2024-05-12
+- ko-KR: upd Time2Work at 2024-05-08
+- ko-KR: upd Asset Packs Manager at 2024-05-08
+- ko-KR: upd Asset Packs Manager at 2024-05-08
+- ko-KR: add Transit Capacity Multiplier at 2024-05-08
+- ko-KR: add Hard Mod at 2024-05-07
+- ko-KR: upd Game Lite Booster at 2024-05-06
 
 ## 1.1.2-p20240505
 
