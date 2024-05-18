@@ -39,6 +39,7 @@
 	<ItemGroup>
 		<Reference Include="Colossal.AssetPipeline">
 		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Colossal.AssetPipeline.dll</HintPath>
+      <Private>False</Private>
 		</Reference>
 		<Reference Include="Colossal.PSI.Common">
 		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Colossal.PSI.Common.dll</HintPath>
@@ -64,6 +65,10 @@
 		</Reference>
 		<Reference Include="Colossal.Localization">
 			<Private>false</Private>
+		</Reference>
+		<Reference Include="Newtonsoft.Json">
+		  <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Cities Skylines II\Cities2_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>false</Private>
 		</Reference>
 		<Reference Include="UnityEngine.CoreModule">
 			<Private>false</Private>
@@ -101,7 +106,6 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Lib.Harmony" Version="2.2.2" />
-	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
 	</ItemGroup>
 
   <Target Name="CopyLocalizationFolder" BeforeTargets="PreBuildEvent">

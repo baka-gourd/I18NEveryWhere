@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.2-p20240512" />
+  <ModVersion Value="1.1.2-p20240518" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -56,6 +56,13 @@ Keeps authors from being overwhelmed by
   <!--<ChangeLog Value="" />-->
   <ChangeLog>
 # Changelog
+
+## 1.1.2-p20240518
+
+- remove useless dll to reduce "mod count"
+- fr-FR: upd WaterVisualTweaks at 2024-05-18
+- zh-HANS: upd WaterVisualTweaks at 2024-05-18
+- ko-KR: add AssetVariationChanger at 2024-05-12
 
 ## 1.1.2-p20240512
 
