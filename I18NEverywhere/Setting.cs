@@ -9,12 +9,14 @@ using System.Collections.Generic;
 
 namespace I18NEverywhere
 {
+    [FileLocation(Path)]
     [SettingsUIShowGroupName(General,Developer)]
     [SettingsUIGroupOrder(General,Developer)]
     public class Setting : ModSetting
     {
         public const string General = "General";
         public const string Developer = "Developer";
+        private const string Path = "ModsSettings/I18NEverywhere/setting.coc";
 
         public Setting(IMod mod) : base(mod)
         {

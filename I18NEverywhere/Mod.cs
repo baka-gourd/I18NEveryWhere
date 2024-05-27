@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
 using Colossal.PSI.Common;
+using Colossal.PSI.Environment;
 
 using Game;
 using Game.Modding;
@@ -28,11 +30,14 @@ namespace I18NEverywhere
         public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new Dictionary<string, string>();
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
+        public event EventHandler OnLocaleLoaded;
 
-        public static Setting Setting { get; set; }
+        public static Setting Setting { get; private set; }
+        public static I18NEverywhere Instance { get; private set; }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
+            Instance = this;
             Logger.Info(nameof(OnLoad));
 
             if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
@@ -75,6 +80,10 @@ namespace I18NEverywhere
             if (!LoadLocales(localeId, fallbackLocaleId))
             {
                 Logger.Error("Cannot load locales.");
+            }
+            else
+            {
+                OnLocaleLoaded?.Invoke(this, EventArgs.Empty);
             }
         }
 
@@ -283,6 +292,33 @@ namespace I18NEverywhere
                 if (!LoadLocales(localeId, fallbackLocaleId, false))
                 {
                     Logger.Error("Cannot reload locales.");
+                }
+            }
+        }
+
+        void MigrateSetting()
+        {
+            var oldLocation = Path.Combine(EnvPath.kUserDataPath, $"{nameof(I18NEverywhere)}.coc");
+
+            if (File.Exists(oldLocation))
+            {
+                var directory = Path.Combine(
+                    EnvPath.kUserDataPath,
+                    "ModSettings",
+                    nameof(I18NEverywhere));
+
+                var correctLocation = Path.Combine(
+                    directory, nameof(I18NEverywhere), ".coc");
+
+                Directory.CreateDirectory(directory);
+
+                if (File.Exists(correctLocation))
+                {
+                    File.Delete(oldLocation);
+                }
+                else
+                {
+                    File.Move(oldLocation, correctLocation);
                 }
             }
         }
