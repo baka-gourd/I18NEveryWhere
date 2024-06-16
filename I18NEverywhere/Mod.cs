@@ -8,7 +8,7 @@ using Colossal.Localization;
 using Colossal.Logging;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
-
+using Colossal.Serialization.Entities;
 using Game;
 using Game.Modding;
 using Game.PSI;
@@ -35,6 +35,19 @@ namespace I18NEverywhere
         public static Setting Setting { get; private set; }
         public static I18NEverywhere Instance { get; private set; }
 
+        private void OnLoadingGameComplete(Purpose p, GameMode m)
+        {
+            if (!_gameLoaded)
+            {
+                NotificationSystem.Pop("i18n-load", delay: 10f,
+                    titleId: "I18NEverywhere",
+                    textId: "I18NEverywhere.Detail",
+                    progressState: ProgressState.Complete,
+                    progress: 100);
+                _gameLoaded = true;
+            }
+        }
+
         public void OnLoad(UpdateSystem updateSystem)
         {
             Instance = this;
@@ -46,19 +59,7 @@ namespace I18NEverywhere
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
-            GameManager.instance.onGameLoadingComplete += (p, m) =>
-            {
-                if (!_gameLoaded)
-                {
-                    NotificationSystem.Pop("i18n-load", delay: 10f,
-                        titleId: "I18NEverywhere",
-                        textId: "I18NEverywhere.Detail",
-                        progressState: ProgressState.Complete,
-                        progress: 100);
-                    _gameLoaded = true;
-                }
-            };
-
+            GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
             Logger.Info("Apply harmony patching...");
             var harmony = new Harmony("Nptr.I18nEverywhere");
             var originalMethod = typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
@@ -331,6 +332,8 @@ namespace I18NEverywhere
                 Setting.UnregisterInOptionsUI();
                 Setting = null;
             }
+            GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;
+            GameManager.instance.onGameLoadingComplete -= OnLoadingGameComplete;
         }
     }
 }
