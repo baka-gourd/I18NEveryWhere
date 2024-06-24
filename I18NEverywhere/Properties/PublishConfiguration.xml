@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.2-p20240527" />
+  <ModVersion Value="1.1.3-p20240624" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -57,185 +57,29 @@ Keeps authors from being overwhelmed by
   <ChangeLog>
 # Changelog
 
-## 1.1.2-p20240527
+## 1.1.3-p20240624
 
-- fr-FR: upd Time2Work at 2024-05-27
-- zh-HANS: upd Time2Work at 2024-05-27
-- ko-KR: upd Time2Work at 2024-05-23
+- fix migrate error
 
-## 1.1.2-p20240518
+## 1.1.3
 
-- remove useless dll to reduce "mod count"
-- fr-FR: upd WaterVisualTweaks at 2024-05-18
-- zh-HANS: upd WaterVisualTweaks at 2024-05-18
-- ko-KR: add AssetVariationChanger at 2024-05-12
-
-## 1.1.2-p20240512
-
-- fr-FR: upd AssetPacksManager at 2024-05-12
-- fr-FR: upd AssetVariationChanger at 2024-05-12
-- fr-FR: add Overpopulated at 2024-05-12
-- fr-FR: upd Population_Rebalance at 2024-05-12
-- fr-FR: upd SchoolCapacityBalancer at 2024-05-12
-- fr-FR: upd Time2Work at 2024-05-12
-- zh-HANS: del ExtraLib at 2024-05-12
-- zh-HANS: upd AssetPacksManager at 2024-05-12
-- zh-HANS: upd AssetVariationChanger at 2024-05-12
-- zh-HANS: add Overpopulated at 2024-05-12
-- zh-HANS: upd Time2Work at 2024-05-12
-- ko-KR: upd Time2Work at 2024-05-08
-- ko-KR: upd Asset Packs Manager at 2024-05-08
-- ko-KR: upd Asset Packs Manager at 2024-05-08
-- ko-KR: add Transit Capacity Multiplier at 2024-05-08
-- ko-KR: add Hard Mod at 2024-05-07
-- ko-KR: upd Game Lite Booster at 2024-05-06
-
-## 1.1.2-p20240505
-
-- ko-KR: add GameLiteBooster
-- ko-KR: upd Time2Work
-- fr-FR: add AssetPacksManager
-- fr-FR: add AssetVariationChanger
-- fr-FR: upd DepotCapacityChanger
-- fr-FR: upd EmploymentTracker
-- fr-FR: upd ExtendedRadio
-- fr-FR: upd InfiniteDemand
-- fr-FR: upd MoveIt
-- fr-FR: upd PopulationRebalance
-- fr-FR: upd SchoolCapacityBalancer
-- fr-FR: upd Time2Work
-- fr-FR: upd WaterVisualTweaks
-- zh-HANS: add AssetPacksManager
-- zh-HANS: add AssetVariationChanger
-- zh-HANS: upd EmploymentTracker
-- zh-HANS: upd NiceWeather
-- zh-HANS: upd Time2Work
-- zh-HANS: upd Weather+
-
-
-## 1.1.2
-
-- prevent load loaded file
-- ko-KR : add Asset Packs Manager
-- ko-KR : add Water Visual Tweaks
-- ko-KR : add Find It
-- ko-KR : add Nice Weather
-- ko-KR : add Infinite Demand
-- ko-KR : add Cim Route Highlighter
-- ko-KR : add Weather Plus
-- ko-KR : upd Vanilla
-- ko-KR : upd Depot Capacity Changer
-- ko-KR : upd ExtendedRadio
-- ko-KR : upd FPS Limiter
-- ko-KR : upd Population Rebalance
-- ko-KR : upd Transport Policy Adjuster
-- zh-HANS: upd Vanilla
-- zh-HANS: upd Time2Work
-- zh-HANS: add Asset Packs Manager
-- zh-HANS: upd Asset Variation Manager
-
-## 1.1.1
-
-- fix overlap value
-- ko-KR: upd Time2Work
-- ko-KR: upd Vanilla
-- ko-KR: add Transport Policy Adjuster
-- zh-HANS: upd Depot Capacity Changer 
-- zh-HANS: upd Employment Tracker
-- zh-HANS: upd Infinite Demand
-- zh-HANS: upd Population Rebalance
-- zh-HANS: upd Time2Work
-- zh-HANS: upd Water Visual Tweaks
-- zh-HANS: upd Weather+
-- zh-HANS: add Nice Weather
-- zh-HANS: add Extended Radio
-- fr-FR: upd Employment Tracker
-- fr-FR: upd Population Rebalance
-- fr-FR: upd Time2Work
-- fr-FR: add Nice Weather
-- fr-FR: add Extended Radio
-
-## 1.1.0-snapshot20240411
-
-- zh-HANS: rm 529 Tiles
-- zh-HANT: rm 529 Tiles
-- zh-HANS: upd Time2Work
-- zh-HANS: upd Water Features
-- zh-HANS: upd Water Visual Tweaks
-- zh-HANS: add Infinite Demand
-- zh-HANS: add Depot Capacity Changer
-- zh-HANS: add Employment Tracker
-- zh-HANS: add Weather+
-- fr-FR: upd Population Rebalance
-- fr-FR: add Infinite Demand
-- fr-FR: add Depot Capacity Changer
-- fr-FR: add Employment Tracker
-- fr-FR: add Weather+
-- fr-FR: add Time2Work
-- fr-FR: add Water Visual Tweaks
-- fr-FR: add Move it
-
-## 1.1.0-snapshot20240403
-
-- zh-HANS: add Water Visual Tweaks
-- zh-HANS: add Time2Work
-- ko-KR: add Depot Capacity Changer
-- ko-KR: add ExtendedRadio
-- ko-KR: add ExtraLib
-- ko-KR: add FPS_Limiter.Mod
-- ko-KR: add Move_it
-- ko-KR: add Population_Rebalance
-- ko-KR: add SchoolCapacityBalancer
-- ko-KR: add Time2Work
-
-## 1.1.0
-
-- On-demand locale load
-- Disable restrict mode by default
-
-## 1.0.6-snapshot20240402
-
-- add fr-FR Population Rebalance translation
-- add zh-HANS mod's name translation
-
-## 1.0.6-snapshot20240331
-
-- add zh-HANT translation
-
-## 1.0.6-snapshot20240328
-
-- add Population Rebalance
-
-## 1.0.6-snapshot20240326
-
-- fix vanilla CHS translation mistakes
-
-## 1.0.6
-
-- fix loading notification in English
-- bump dependency version
-
-## 1.0.5
-
-- add load notification
-- add 529 tiles, extralib, move it, scb, water features CHS translation.
-
-## 1.0.4
-
-- catch errors
-
-## 1.0.3
-
-- add log config
-
-## 1.0.2
-
-- reload language should clear current language entry
-- add options for force scan
-
-## 1.0.1
-
-- add mod support
+- clear event when dispose
+- fr-FR: add AreaBucket at 2024-06-24
+- fr-FR: add AssetIconLibrary at 2024-06-24
+- fr-FR: upd Move_it at 2024-06-24
+- fr-FR: upd Time2Work at 2024-06-24
+- fr-FR: add Weather+ at 2024-06-24
+- zh-HANS: add AreaBucket at 2024-06-24
+- zh-HANS: add AssetIconLibrary at 2024-06-24
+- zh-HANS: upd Move_it at 2024-06-24
+- zh-HANS: upd Time2Work at 2024-06-24
+- zh-HANS: upd Weather+ at 2024-06-24
+- ko-KR: add Asset Icon Library at 2024-06-16
+- ko-KR: upd Asset Packs Manager at 2024-06-16
+- ko-KR: upd Move_it at 2024-06-16
+- ko-KR: upd Time2Work at 2024-06-16
+- ko-KR: upd Water Visual Tweaks at 2024-06-16
+- ko-KR: upd Weather Plus at 2024-06-16
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />

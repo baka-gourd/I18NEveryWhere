@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-
+using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -58,6 +59,7 @@ namespace I18NEverywhere
                 Logger.Info($"Current mod asset at {asset.path}");
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
+            MigrateSetting();
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
             Logger.Info("Apply harmony patching...");
@@ -297,20 +299,22 @@ namespace I18NEverywhere
             }
         }
 
-        void MigrateSetting()
+        static void MigrateSetting()
         {
-            var oldLocation = Path.Combine(EnvPath.kUserDataPath, $"{nameof(I18NEverywhere)}.coc");
+            var oldLocation = Path.Combine(EnvPath.kUserDataPath, $"I18nEveryWhere.coc");
+            Logger.Info(oldLocation);
 
             if (File.Exists(oldLocation))
             {
                 var directory = Path.Combine(
                     EnvPath.kUserDataPath,
                     "ModSettings",
-                    nameof(I18NEverywhere));
+                    "I18NEverywhere");
+                
 
                 var correctLocation = Path.Combine(
-                    directory, nameof(I18NEverywhere), ".coc");
-
+                    directory, "setting.coc");
+                Logger.Info(correctLocation);
                 Directory.CreateDirectory(directory);
 
                 if (File.Exists(correctLocation))
