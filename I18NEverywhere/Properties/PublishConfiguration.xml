@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.1.3-p20240624" />
+  <ModVersion Value="1.1.3-p20240701" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -57,29 +57,16 @@ Keeps authors from being overwhelmed by
   <ChangeLog>
 # Changelog
 
-## 1.1.3-p20240624
+## 1.1.3-p20240701
 
-- fix migrate error
-
-## 1.1.3
-
-- clear event when dispose
-- fr-FR: add AreaBucket at 2024-06-24
-- fr-FR: add AssetIconLibrary at 2024-06-24
-- fr-FR: upd Move_it at 2024-06-24
-- fr-FR: upd Time2Work at 2024-06-24
-- fr-FR: add Weather+ at 2024-06-24
-- zh-HANS: add AreaBucket at 2024-06-24
-- zh-HANS: add AssetIconLibrary at 2024-06-24
-- zh-HANS: upd Move_it at 2024-06-24
-- zh-HANS: upd Time2Work at 2024-06-24
-- zh-HANS: upd Weather+ at 2024-06-24
-- ko-KR: add Asset Icon Library at 2024-06-16
-- ko-KR: upd Asset Packs Manager at 2024-06-16
-- ko-KR: upd Move_it at 2024-06-16
-- ko-KR: upd Time2Work at 2024-06-16
-- ko-KR: upd Water Visual Tweaks at 2024-06-16
-- ko-KR: upd Weather Plus at 2024-06-16
+- zh-HANS: upd AssetVariationChanger at 2024-07-01
+- zh-HANS: add ExtendedTooltip at 2024-07-01
+- zh-HANS: upd Time2Work at 2024-07-01
+- zh-HANS: upd Vanilla at 2024-07-01
+- ko-KR: upd AssetVariationChanger at 2024-06-29
+- ko-KR: add Extended Tooltip at 2024-06-29
+- ko-KR: upd Time2Work at 2024-06-29
+- ko-KR: upd Vanilla at 2024-06-29
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
