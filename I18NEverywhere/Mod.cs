@@ -1,15 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using Colossal;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
+using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
 using Colossal.Serialization.Entities;
+
 using Game;
 using Game.Modding;
 using Game.PSI;
@@ -29,6 +30,7 @@ namespace I18NEverywhere
         public static ILog Logger { get; set; } = LogManager.GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
         public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = new Dictionary<string, string>();
         public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new Dictionary<string, string>();
+        public static Dictionary<string, object> ModsFallbackDictionary { get; set; } = new Dictionary<string, object>();
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
         public event EventHandler OnLocaleLoaded;
@@ -38,15 +40,13 @@ namespace I18NEverywhere
 
         private void OnLoadingGameComplete(Purpose p, GameMode m)
         {
-            if (!_gameLoaded)
-            {
-                NotificationSystem.Pop("i18n-load", delay: 10f,
-                    titleId: "I18NEverywhere",
-                    textId: "I18NEverywhere.Detail",
-                    progressState: ProgressState.Complete,
-                    progress: 100);
-                _gameLoaded = true;
-            }
+            if (_gameLoaded) return;
+            NotificationSystem.Pop("i18n-load", delay: 10f,
+                titleId: "I18NEverywhere",
+                textId: "I18NEverywhere.Detail",
+                progressState: ProgressState.Complete,
+                progress: 100);
+            _gameLoaded = true;
         }
 
         public void OnLoad(UpdateSystem updateSystem)
@@ -310,7 +310,7 @@ namespace I18NEverywhere
                     EnvPath.kUserDataPath,
                     "ModSettings",
                     "I18NEverywhere");
-                
+
 
                 var correctLocation = Path.Combine(
                     directory, "setting.coc");
@@ -325,6 +325,22 @@ namespace I18NEverywhere
                 {
                     File.Move(oldLocation, correctLocation);
                 }
+            }
+        }
+
+        public static void UpdateMods()
+        {
+            ModsFallbackDictionary.Clear();
+            var localeInfo = typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+            //var generic = typeof(Dictionary<,>).MakeGenericType(typeof(string), localeInfo);
+            var localeInfos = typeof(LocalizationManager).GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(GameManager.instance.localizationManager);
+            if (!(localeInfos is IDictionary dict)) return;
+            var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
+            if (!(sources is IEnumerable enumerable)) return;
+            int counter = 0;
+            foreach (var o in enumerable)
+            {
+                ModsFallbackDictionary.Add($"{counter++}: {o.GetType().GetFriendlyName()}", o);
             }
         }
 

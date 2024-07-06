@@ -6,12 +6,17 @@ using Game.SceneFlow;
 using Game.Settings;
 
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Game.UI.Widgets;
+using Newtonsoft.Json;
+using Colossal.PSI.Environment;
 
 namespace I18NEverywhere
 {
     [FileLocation(Path)]
-    [SettingsUIShowGroupName(General,Developer)]
-    [SettingsUIGroupOrder(General,Developer)]
+    [SettingsUIShowGroupName(General, Developer)]
+    [SettingsUIGroupOrder(General, Developer)]
     public class Setting : ModSetting
     {
         public const string General = "General";
@@ -46,6 +51,67 @@ namespace I18NEverywhere
                 I18NEverywhere.LoadLocales(localeId, fallbackLocaleId, reloadFallback: true);
             }
         }
+
+        [SettingsUISection(Developer)]
+        [SettingsUIDropdown(typeof(Setting), nameof(GetMods))]
+        public string SelectedModDropDown { get; set; } = "None";
+
+        public DropdownItem<string>[] GetMods()
+        {
+            var list = new List<DropdownItem<string>>();
+            I18NEverywhere.UpdateMods();
+            list.Add(new DropdownItem<string> { value = "None", displayName = "None" });
+            list.Add(new DropdownItem<string> { value = "All", displayName = "All" });
+            list.AddRange(I18NEverywhere.ModsFallbackDictionary.Keys.Select(key => new DropdownItem<string> { value = key, displayName = key }));
+
+            return list.ToArray();
+        }
+
+        [SettingsUISection(Developer)]
+        [SettingsUIButton]
+        [SettingsUIConfirmation(overrideConfirmMessageId: "I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization")]
+        public bool ExportModLocalization
+        {
+            set
+            {
+                var directory = System.IO.Path.Combine(
+                    EnvPath.kUserDataPath,
+                    "ModData",
+                    "I18NEverywhere");
+                var dir = new DirectoryInfo(directory);
+
+                if (!dir.Exists)
+                {
+                    dir.Create();
+                }
+
+                switch (SelectedModDropDown)
+                {
+                    case "None":
+                        return;
+                    case "All":
+                        {
+                            foreach (var pairD in I18NEverywhere.ModsFallbackDictionary)
+                            {
+                                if (!(pairD.Value is IDictionarySource isss)) continue;
+                                var dict = isss.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+                                var str = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                                File.WriteAllText(System.IO.Path.Combine(dir.FullName, Util.SanitizeFileName(pairD.Key + ".json")), str);
+                            }
+                            return;
+                        }
+                }
+
+                var obj = I18NEverywhere.ModsFallbackDictionary[SelectedModDropDown];
+                if (!(obj is IDictionarySource iss)) return;
+                {
+                    var dict = iss.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
+                    var str = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                    File.WriteAllText(System.IO.Path.Combine(dir.FullName, Util.SanitizeFileName(SelectedModDropDown + ".json")), str);
+                }
+            }
+        }
+
 
         public override void SetDefaults()
         {
@@ -82,6 +148,14 @@ namespace I18NEverywhere
 
                 { _mSetting.GetOptionLabelLocaleID(nameof(Setting.ReloadLocalization)), "Reload"},
                 { _mSetting.GetOptionDescLocaleID(nameof(Setting.ReloadLocalization)), "Reload localizations."},
+
+                { _mSetting.GetOptionLabelLocaleID(nameof(Setting.SelectedModDropDown)), "Selected mod" },
+                { _mSetting.GetOptionDescLocaleID(nameof(Setting.SelectedModDropDown)), "Select what do you want to export." },
+
+                { _mSetting.GetOptionLabelLocaleID(nameof(Setting.ExportModLocalization)), "Export selected localization" },
+                { _mSetting.GetOptionDescLocaleID(nameof(Setting.ExportModLocalization)), "Export selected localization." },
+
+                { _mSetting.GetOptionWarningLocaleID(nameof(Setting.ExportModLocalization)), "It will export to ModData directory." },
 
                 { "Menu.NOTIFICATION_TITLE[I18NEverywhere]", "I18N Everywhere" },
                 { "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]", "Localization loaded." }
