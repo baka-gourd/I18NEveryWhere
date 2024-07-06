@@ -10,6 +10,11 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ReloadLocalization]": "重载本地化",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择模组",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择需要导出的模组",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
+  "Options.WARNING[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "文件将会导出到 ModData 文件夹",
   "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "国际化",
   "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "本地化已加载"
 }
