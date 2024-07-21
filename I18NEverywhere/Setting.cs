@@ -155,7 +155,7 @@ namespace I18NEverywhere
                 { _mSetting.GetOptionLabelLocaleID(nameof(Setting.ExportModLocalization)), "Export selected localization" },
                 { _mSetting.GetOptionDescLocaleID(nameof(Setting.ExportModLocalization)), "Export selected localization." },
 
-                { _mSetting.GetOptionWarningLocaleID(nameof(Setting.ExportModLocalization)), "It will export to ModData directory." },
+                { _mSetting.GetOptionWarningLocaleID(nameof(Setting.ExportModLocalization)), "It will export to ModsData directory." },
 
                 { "Menu.NOTIFICATION_TITLE[I18NEverywhere]", "I18N Everywhere" },
                 { "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]", "Localization loaded." }
