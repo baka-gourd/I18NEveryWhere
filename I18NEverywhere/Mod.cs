@@ -214,6 +214,11 @@ namespace I18NEverywhere
 
                     if (Directory.Exists(Path.Combine(modDir, "lang")))
                     {
+                        if (File.Exists(Path.Combine(modDir, "lang", ".nolang")))
+                        {
+                            continue;
+                        }
+
                         Logger.Info($"Load \"{modInfo.name}\"'s localization files.");
                         var current = Path.Combine(modDir, "lang", localeId + ".json");
                         var fallback = Path.Combine(modDir, "lang", fallbackLocaleId + ".json");
