@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.0" />
+  <ModVersion Value="1.2.1" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -57,15 +57,51 @@ Keeps authors from being overwhelmed by
   <ChangeLog>
 # Changelog
 
-## 1.2.0
+## 1.2.1
 
-- add export func for mods
-- zh-HANS: upd AssetPacksManager at 2024-07-06
-- ko-KR: upd Asset Packs Manager at 2024-07-07
-- ko-KR: add No Pollution at 2024-07-07
-- ko-KR: upd Time2Work at 2024-07-07
-- ko-KR: upd Weather Plus at 2024-07-07
-- ko-KR: upd Vanilla at 2024-07-07
+- add ignore func
+- zh-HANS: add ByeByeHomeless at 2024-07-21
+- zh-HANS: upd InfiniteDemand at 2024-07-21
+- zh-HANS: add NoPollution at 2024-07-21
+- zh-HANS: upd Time2Work at 2024-07-21
+- zh-HANS: upd Weather+ at 2024-07-21
+- fr-FR: upd AreaBucket at 2024-07-21
+- fr-FR: upd AssetIconLibrary at 2024-07-21
+- fr-FR: upd AssetPacksManager at 2024-07-21
+- fr-FR: upd AssetVariationChanger at 2024-07-21
+- fr-FR: add ByeByeHomeless at 2024-07-21
+- fr-FR: upd DepotCapacityChanger at 2024-07-21
+- fr-FR: upd EmploymentTracker at 2024-07-21
+- fr-FR: upd ExtendedRadio at 2024-07-21
+- fr-FR: upd InfiniteDemand at 2024-07-21
+- fr-FR: upd Move_it at 2024-07-21
+- fr-FR: upd NiceWeather at 2024-07-21
+- fr-FR: upd Overpopulated at 2024-07-21
+- fr-FR: upd Population_Rebalance at 2024-07-21
+- fr-FR: upd SchoolCapacityBalancer at 2024-07-21
+- fr-FR: upd Time2Work at 2024-07-21
+- fr-FR: upd WaterVisualTweaks at 2024-07-21
+- fr-FR: upd Weather+ at 2024-07-21
+- fr-FR: upd AreaBucket at 2024-07-13
+- fr-FR: upd AssetIconLibrary at 2024-07-13
+- fr-FR: upd AssetPacksManager at 2024-07-13
+- fr-FR: upd AssetVariationChanger at 2024-07-13
+- fr-FR: upd DepotCapacityChanger at 2024-07-13
+- fr-FR: upd EmploymentTracker at 2024-07-13
+- fr-FR: upd ExtendedRadio at 2024-07-13
+- fr-FR: upd InfiniteDemand at 2024-07-13
+- fr-FR: upd Move_it at 2024-07-13
+- fr-FR: upd NiceWeather at 2024-07-13
+- fr-FR: add No Pollution at 2024-07-13
+- fr-FR: upd Overpopulated at 2024-07-13
+- fr-FR: upd Population_Rebalance at 2024-07-13
+- fr-FR: upd SchoolCapacityBalancer at 2024-07-13
+- fr-FR: upd Time2Work at 2024-07-13
+- fr-FR: upd WaterVisualTweaks at 2024-07-13
+- fr-FR: upd Weather+ at 2024-07-13
+- ko-KR: upd Extended Tooltip at 2024-07-10
+- ko-KR: upd Infinite Demand at 2024-07-10
+- ko-KR: upd No Pollution at 2024-07-10
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
