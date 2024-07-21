@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Colossal.PSI.Environment;
+
+using System;
 using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace I18NEverywhere
 {
-    public class Util
+    public static class Util
     {
         public static string SanitizeFileName(string fileName)
         {
@@ -19,16 +22,74 @@ namespace I18NEverywhere
                 "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
             };
 
-            foreach (var reservedName in reservedNames)
+            if (reservedNames.Any(reservedName => sanitizedFileName.Equals(reservedName, StringComparison.OrdinalIgnoreCase)))
             {
-                if (sanitizedFileName.Equals(reservedName, StringComparison.OrdinalIgnoreCase))
-                {
-                    sanitizedFileName = "_" + sanitizedFileName;
-                    break;
-                }
+                sanitizedFileName = "_" + sanitizedFileName;
             }
 
             return sanitizedFileName;
+        }
+
+        public static void MigrateSetting()
+        {
+            var oldLocation = Path.Combine(EnvPath.kUserDataPath, $"I18nEveryWhere.coc");
+            I18NEverywhere.Logger.Info(oldLocation);
+            MigrateMisMigratedSetting();
+            if (!File.Exists(oldLocation)) return;
+
+            var directory = Path.Combine(
+                EnvPath.kUserDataPath,
+                "ModsSettings",
+                "I18NEverywhere");
+
+            var correctLocation = Path.Combine(
+                directory, "setting.coc");
+            I18NEverywhere.Logger.Info(correctLocation);
+            Directory.CreateDirectory(directory);
+
+            if (File.Exists(correctLocation))
+            {
+                File.Delete(oldLocation);
+            }
+            else
+            {
+                File.Move(oldLocation, correctLocation);
+            }
+        }
+
+        private static void MigrateMisMigratedSetting()
+        {
+            var oldLocation = Path.Combine(
+                EnvPath.kUserDataPath,
+                "ModSettings",
+                "I18NEverywhere",
+                "setting.coc");
+            I18NEverywhere.Logger.Info(oldLocation);
+
+            if (!File.Exists(oldLocation)) return;
+
+            var directory = Path.Combine(
+                EnvPath.kUserDataPath,
+                "ModsSettings",
+                "I18NEverywhere");
+
+            var correctLocation = Path.Combine(
+                directory, "setting.coc");
+            I18NEverywhere.Logger.Info(correctLocation);
+            Directory.CreateDirectory(directory);
+
+            if (File.Exists(correctLocation))
+            {
+                File.Delete(oldLocation);
+            }
+            else
+            {
+                File.Move(oldLocation, correctLocation);
+            }
+            Directory.Delete(Path.Combine(
+                EnvPath.kUserDataPath,
+                "ModSettings",
+                "I18NEverywhere"), true);
         }
     }
 }

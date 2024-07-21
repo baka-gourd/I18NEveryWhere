@@ -10,16 +10,12 @@ using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
 using Colossal.Serialization.Entities;
-
 using Game;
 using Game.Modding;
 using Game.PSI;
 using Game.SceneFlow;
-
 using HarmonyLib;
-
 using JetBrains.Annotations;
-
 using Newtonsoft.Json;
 
 namespace I18NEverywhere
@@ -27,10 +23,18 @@ namespace I18NEverywhere
     // ReSharper disable once ClassNeverInstantiated.Global
     public class I18NEverywhere : IMod
     {
-        public static ILog Logger { get; set; } = LogManager.GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
-        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = new Dictionary<string, string>();
-        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new Dictionary<string, string>();
-        public static Dictionary<string, object> ModsFallbackDictionary { get; set; } = new Dictionary<string, object>();
+        public static ILog Logger { get; set; } = LogManager
+            .GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
+
+        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } =
+            new Dictionary<string, string>();
+
+        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } =
+            new Dictionary<string, string>();
+
+        public static Dictionary<string, object> ModsFallbackDictionary { get; set; } =
+            new Dictionary<string, object>();
+
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
         public event EventHandler OnLocaleLoaded;
@@ -59,13 +63,16 @@ namespace I18NEverywhere
                 Logger.Info($"Current mod asset at {asset.path}");
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
-            MigrateSetting();
+
+            Util.MigrateSetting();
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
             Logger.Info("Apply harmony patching...");
             var harmony = new Harmony("Nptr.I18nEverywhere");
-            var originalMethod = typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
-            var prefix = typeof(HookLocalizationDictionary).GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static);
+            var originalMethod =
+                typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
+            var prefix =
+                typeof(HookLocalizationDictionary).GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static);
 
             harmony.Patch(originalMethod, new HarmonyMethod(prefix));
             Logger.Info("Harmony patched.");
@@ -217,7 +224,8 @@ namespace I18NEverywhere
                             try
                             {
                                 var currDict =
-                                    JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(current)) ??
+                                    JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                                        File.ReadAllText(current)) ??
                                     new Dictionary<string, string>();
                                 foreach (var pair in currDict)
                                 {
@@ -299,43 +307,18 @@ namespace I18NEverywhere
             }
         }
 
-        static void MigrateSetting()
-        {
-            var oldLocation = Path.Combine(EnvPath.kUserDataPath, $"I18nEveryWhere.coc");
-            Logger.Info(oldLocation);
-
-            if (File.Exists(oldLocation))
-            {
-                var directory = Path.Combine(
-                    EnvPath.kUserDataPath,
-                    "ModSettings",
-                    "I18NEverywhere");
-
-
-                var correctLocation = Path.Combine(
-                    directory, "setting.coc");
-                Logger.Info(correctLocation);
-                Directory.CreateDirectory(directory);
-
-                if (File.Exists(correctLocation))
-                {
-                    File.Delete(oldLocation);
-                }
-                else
-                {
-                    File.Move(oldLocation, correctLocation);
-                }
-            }
-        }
-
         public static void UpdateMods()
         {
             ModsFallbackDictionary.Clear();
-            var localeInfo = typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+            var localeInfo =
+                typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic | BindingFlags.Instance);
             //var generic = typeof(Dictionary<,>).MakeGenericType(typeof(string), localeInfo);
-            var localeInfos = typeof(LocalizationManager).GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)?.GetValue(GameManager.instance.localizationManager);
+            var localeInfos = typeof(LocalizationManager)
+                .GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?.GetValue(GameManager.instance.localizationManager);
             if (!(localeInfos is IDictionary dict)) return;
-            var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
+            var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)
+                ?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
             if (!(sources is IEnumerable enumerable)) return;
             int counter = 0;
             foreach (var o in enumerable)
@@ -352,6 +335,7 @@ namespace I18NEverywhere
                 Setting.UnregisterInOptionsUI();
                 Setting = null;
             }
+
             GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete -= OnLoadingGameComplete;
         }

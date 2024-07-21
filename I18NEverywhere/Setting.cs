@@ -21,7 +21,7 @@ namespace I18NEverywhere
     {
         public const string General = "General";
         public const string Developer = "Developer";
-        private const string Path = "ModsSettings/I18NEverywhere/setting.coc";
+        private const string Path = "ModsSettings/I18NEverywhere/setting";
 
         public Setting(IMod mod) : base(mod)
         {
@@ -56,7 +56,7 @@ namespace I18NEverywhere
         [SettingsUIDropdown(typeof(Setting), nameof(GetMods))]
         public string SelectedModDropDown { get; set; } = "None";
 
-        public DropdownItem<string>[] GetMods()
+        public static DropdownItem<string>[] GetMods()
         {
             var list = new List<DropdownItem<string>>();
             I18NEverywhere.UpdateMods();
@@ -76,7 +76,7 @@ namespace I18NEverywhere
             {
                 var directory = System.IO.Path.Combine(
                     EnvPath.kUserDataPath,
-                    "ModData",
+                    "ModsData",
                     "I18NEverywhere");
                 var dir = new DirectoryInfo(directory);
 
