@@ -328,6 +328,12 @@ namespace I18NEverywhere
             int counter = 0;
             foreach (var o in enumerable)
             {
+                if (o is LocaleAsset local)
+                {
+                    ModsFallbackDictionary.Add($"{counter++}: {local.name}", o);
+                    continue;
+                }
+
                 ModsFallbackDictionary.Add($"{counter++}: {o.GetType().GetFriendlyName()}", o);
             }
         }
