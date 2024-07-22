@@ -1,5 +1,5 @@
 {
-  "Options.SECTION[I18NEverywhere.I18NEverywhere.I18NEverywhere]": "I18N 번역 모드",
+  "Options.SECTION[I18NEverywhere.I18NEverywhere.I18NEverywhere]": "I18N 번역 모드(I18N Everywhere)",
   "Options.GROUP[I18NEverywhere.I18NEverywhere.I18NEverywhere.General]": "일반",
   "Options.GROUP[I18NEverywhere.I18NEverywhere.I18NEverywhere.Developer]": "개발자용",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.Overwrite]": "덮어쓰기",
@@ -10,6 +10,11 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ReloadLocalization]": "I18N 번역 모드 폴더내 로컬 언어 파일들을 다시 불러옵니다.",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "FUNC 활성화시 로그 키",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "FUNC 활성화시 로그 키",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "모드 선택",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "언어코드를 추출할 모드를 선택합니다.",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "선택한 언어 추출",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "선택한 언어를 추출합니다",
+  "Options.WARNING[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "ModsData 폴더로 추출됩니다. 진행하겠습니까?",
   "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "I18N 번역 모드",
   "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "언어 불러와짐"
 }
