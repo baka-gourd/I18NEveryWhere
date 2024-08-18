@@ -47,7 +47,7 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.2.2-p20240729" />
+  <ModVersion Value="1.2.2-p20240818" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.1.*" />
   <!--Dependency for the mod, can be set multiple times-->
@@ -57,29 +57,30 @@ Keeps authors from being overwhelmed by
   <ChangeLog>
 # Changelog
 
-## 1.2.2-p20240729
+## 1.2.2-p20240818
 
-- fr-FR: upd AreaBucket at 2024-07-29
-- fr-FR: upd AssetIconLibrary at 2024-07-29
-- fr-FR: upd AssetPacksManager at 2024-07-29
-- fr-FR: upd AssetVariationChanger at 2024-07-29
-- fr-FR: add ByeByeHomeless at 2024-07-29
-- fr-FR: upd DepotCapacityChanger at 2024-07-29
-- fr-FR: upd EmploymentTracker at 2024-07-29
-- fr-FR: upd ExtendedRadio at 2024-07-29
-- fr-FR: upd InfiniteDemand at 2024-07-29
-- fr-FR: add MoveIt at 2024-07-29
-- fr-FR: upd NiceWeather at 2024-07-29
-- fr-FR: add NoPollution at 2024-07-29
-- fr-FR: add NoVehicleDespawn at 2024-07-29
-- fr-FR: upd Overpopulated at 2024-07-29
-- fr-FR: upd Population_Rebalance at 2024-07-29
-- fr-FR: upd SchoolCapacityBalancer at 2024-07-29
-- fr-FR: add StifferVehicles at 2024-07-29
-- fr-FR: upd Time2Work at 2024-07-29
-- fr-FR: upd Weather+ at 2024-07-29
-- zh-HANS: upd MoveIt at 2024-07-29
-- zh-HANS: add SimpleModCheckerPlus at 2024-07-29
+- zh-HANS: upd RealisticParking at 2024-08-18
+- zh-HANS: add RealisticWorkplacesAndHouseholds at 2024-08-18
+- zh-HANS: add AllAboard at 2024-08-18
+- zh-HANS: upd NoPollution at 2024-08-18
+- zh-HANS: upd PathfindingCustomizer at 2024-08-18
+- zh-HANS: add RealLife at 2024-08-18
+- zh-HANS: add RealisticParking at 2024-08-18
+- fr-FR: add AllAboard at 2024-08-18
+- fr-FR: upd ExtendedRadio at 2024-08-18
+- fr-FR: upd ExtendedTooltip at 2024-08-18
+- fr-FR: upd NoPollution at 2024-08-18
+- fr-FR: upd PathfindingCustomizer at 2024-08-18
+- fr-FR: add RealLife at 2024-08-18
+- fr-FR: add RealisticParking at 2024-08-18
+- ko-KR: add AllAboard at 2024-08-13
+- ko-KR: add CityStats at 2024-08-13
+- ko-KR: upd ExtendedRadio at 2024-08-13
+- ko-KR: upd InfiniteDemand at 2024-08-13
+- ko-KR: upd NoPollution at 2024-08-13
+- ko-KR: upd PathfindingCustomizer at 2024-08-13
+- ko-KR: add RealLife at 2024-08-13
+- ko-KR: add RealisticParking at 2024-08-13
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />

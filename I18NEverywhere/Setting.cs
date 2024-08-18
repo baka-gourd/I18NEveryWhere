@@ -14,14 +14,13 @@ using Colossal.PSI.Environment;
 
 namespace I18NEverywhere
 {
-    [FileLocation(Path)]
+    [FileLocation("ModsSettings\\I18NEverywhere\\I18NEverywhere")]
     [SettingsUIShowGroupName(General, Developer)]
     [SettingsUIGroupOrder(General, Developer)]
     public class Setting : ModSetting
     {
         public const string General = "General";
         public const string Developer = "Developer";
-        private const string Path = "ModsSettings/I18NEverywhere/setting";
 
         public Setting(IMod mod) : base(mod)
         {
@@ -103,7 +102,7 @@ namespace I18NEverywhere
                 }
 
                 var obj = I18NEverywhere.ModsFallbackDictionary[SelectedModDropDown];
-                if (!(obj is IDictionarySource iss)) return;
+                if (obj is not IDictionarySource iss) return;
                 {
                     var dict = iss.ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>()).ToDictionary(pair => pair.Key, pair => pair.Value);
                     var str = JsonConvert.SerializeObject(dict, Formatting.Indented);

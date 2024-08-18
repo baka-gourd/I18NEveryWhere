@@ -8,7 +8,6 @@ using Colossal.Localization;
 using Colossal.Logging;
 using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
-using Colossal.PSI.Environment;
 using Colossal.Serialization.Entities;
 using Game;
 using Game.Modding;
@@ -23,17 +22,14 @@ namespace I18NEverywhere
     // ReSharper disable once ClassNeverInstantiated.Global
     public class I18NEverywhere : IMod
     {
-        public static ILog Logger { get; set; } = LogManager
+        public static ILog Logger { get; } = LogManager
             .GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
 
-        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } =
-            new Dictionary<string, string>();
+        public static Dictionary<string, string> CurrentLocaleDictionary { get; } = new();
 
-        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } =
-            new Dictionary<string, string>();
+        public static Dictionary<string, string> FallbackLocaleDictionary { get; } = new();
 
-        public static Dictionary<string, object> ModsFallbackDictionary { get; set; } =
-            new Dictionary<string, object>();
+        public static Dictionary<string, object> ModsFallbackDictionary { get; } = new();
 
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
@@ -41,17 +37,6 @@ namespace I18NEverywhere
 
         public static Setting Setting { get; private set; }
         public static I18NEverywhere Instance { get; private set; }
-
-        private void OnLoadingGameComplete(Purpose p, GameMode m)
-        {
-            if (_gameLoaded) return;
-            NotificationSystem.Pop("i18n-load", delay: 10f,
-                titleId: "I18NEverywhere",
-                textId: "I18NEverywhere.Detail",
-                progressState: ProgressState.Complete,
-                progress: 100);
-            _gameLoaded = true;
-        }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -81,7 +66,7 @@ namespace I18NEverywhere
             Setting.RegisterInOptionsUI();
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
 
-            AssetDatabase.global.LoadSettings(nameof(I18NEverywhere), Setting, new Setting(this));
+            AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
 
             var localeId = GameManager.instance.localizationManager.activeLocaleId;
             var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
@@ -321,11 +306,11 @@ namespace I18NEverywhere
             var localeInfos = typeof(LocalizationManager)
                 .GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.GetValue(GameManager.instance.localizationManager);
-            if (!(localeInfos is IDictionary dict)) return;
+            if (localeInfos is not IDictionary dict) return;
             var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)
                 ?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
-            if (!(sources is IEnumerable enumerable)) return;
-            int counter = 0;
+            if (sources is not IEnumerable enumerable) return;
+            var counter = 0;
             foreach (var o in enumerable)
             {
                 if (o is LocaleAsset local)
@@ -349,6 +334,17 @@ namespace I18NEverywhere
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete -= OnLoadingGameComplete;
+        }
+
+        private void OnLoadingGameComplete(Purpose p, GameMode m)
+        {
+            if (_gameLoaded) return;
+            NotificationSystem.Pop("i18n-load", delay: 10f,
+                titleId: "I18NEverywhere",
+                textId: "I18NEverywhere.Detail",
+                progressState: ProgressState.Complete,
+                progress: 100);
+            _gameLoaded = true;
         }
     }
 }
