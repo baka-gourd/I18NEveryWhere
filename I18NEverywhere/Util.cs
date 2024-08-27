@@ -37,7 +37,7 @@ namespace I18NEverywhere
         {
             var oldLocation = Path.Combine(EnvPath.kUserDataPath, "I18nEveryWhere.coc");
             var correctLocation = Path.Combine(EnvPath.kUserDataPath, "ModsSettings", "I18NEverywhere",
-                "I18nEveryWhere.coc");
+                "I18NEveryWhere.coc");
 
             I18NEverywhere.Logger.Info(oldLocation);
             MigrateMisMigratedSetting();
@@ -60,20 +60,18 @@ namespace I18NEverywhere
             var oldLocation = Path.Combine(EnvPath.kUserDataPath, "ModSettings", "I18NEverywhere", "setting.coc");
             var oldLocation2 = Path.Combine(EnvPath.kUserDataPath, "ModsSettings", "I18NEverywhere", "setting.coc");
             var correctLocation = Path.Combine(EnvPath.kUserDataPath, "ModsSettings", "I18NEverywhere",
-                "I18nEveryWhere.coc");
+                "I18NEverywhere.coc");
 
             I18NEverywhere.Logger.Info(oldLocation);
 
             if (File.Exists(oldLocation))
             {
                 MigrateFile(oldLocation, correctLocation);
-                Directory.Delete(Path.Combine(EnvPath.kUserDataPath, "ModSettings", "I18NEverywhere"), true);
             }
 
             if (File.Exists(oldLocation2))
             {
                 MigrateFile(oldLocation2, correctLocation);
-                Directory.Delete(Path.Combine(EnvPath.kUserDataPath, "ModSettings", "I18NEverywhere"), true);
             }
         }
 
