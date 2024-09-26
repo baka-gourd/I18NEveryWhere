@@ -4,23 +4,26 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
 using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
+using Colossal.PSI.Environment;
+using Colossal.PSI.PdxSdk;
 using Colossal.Serialization.Entities;
-
 using Game;
 using Game.Modding;
 using Game.PSI;
 using Game.SceneFlow;
 using HarmonyLib;
-
+using I18NEverywhere.Models;
 using JetBrains.Annotations;
-
 using Newtonsoft.Json;
+using PDX.SDK.Contracts;
+using PDX.SDK.Contracts.Service.Mods.Enums;
+
+// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace I18NEverywhere
 {
@@ -37,6 +40,7 @@ namespace I18NEverywhere
         public static Dictionary<string, object> ModsFallbackDictionary { get; } = new();
 
         private static List<ModInfo> CachedInfos { get; set; } = [];
+        private static List<ModInfo> CachedLanguagePacks { get; set; } = [];
 
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private bool _gameLoaded;
@@ -56,7 +60,15 @@ namespace I18NEverywhere
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
 
-            Util.MigrateSetting();
+            try
+            {
+                Util.MigrateSetting();
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, "Cannot migrate setting.");
+            }
+
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
             Logger.Info("Apply harmony patching...");
@@ -71,7 +83,6 @@ namespace I18NEverywhere
 
             Setting = new Setting(this);
             Setting.RegisterInOptionsUI();
-            GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
 
             AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
 
@@ -89,6 +100,8 @@ namespace I18NEverywhere
             {
                 OnLocaleLoaded?.Invoke(this, EventArgs.Empty);
             }
+
+            GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
         }
 
         public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
@@ -106,10 +119,13 @@ namespace I18NEverywhere
             return true;
         }
 
-        private static bool LoadCentralizedLocales(string localeId, string fallbackLocaleId, bool reloadFallback)
+        private static bool LoadCentralizedLocales(string localeId, string fallbackLocaleId, bool reloadFallback,
+            string localizationsPath = null)
         {
+            localizationsPath ??= LocalizationsPath;
+
             var restrict = Setting.Restrict;
-            if (string.IsNullOrEmpty(LocalizationsPath))
+            if (string.IsNullOrEmpty(localizationsPath))
             {
                 Logger.Warn("Cannot find localization path!");
                 return false;
@@ -117,9 +133,9 @@ namespace I18NEverywhere
 
             if (reloadFallback)
             {
-                if (Directory.Exists(Path.Combine(LocalizationsPath, fallbackLocaleId)))
+                if (Directory.Exists(Path.Combine(localizationsPath, fallbackLocaleId)))
                 {
-                    var directoryInfo = new DirectoryInfo(Path.Combine(LocalizationsPath, fallbackLocaleId));
+                    var directoryInfo = new DirectoryInfo(Path.Combine(localizationsPath, fallbackLocaleId));
                     Logger.Info($"{nameof(fallbackLocaleId)} directory: {directoryInfo.FullName}");
                     var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
                     foreach (var file in files)
@@ -156,9 +172,9 @@ namespace I18NEverywhere
                 }
             }
 
-            if (Directory.Exists(Path.Combine(LocalizationsPath, localeId)))
+            if (Directory.Exists(Path.Combine(localizationsPath, localeId)))
             {
-                var directoryInfo = new DirectoryInfo(Path.Combine(LocalizationsPath, localeId));
+                var directoryInfo = new DirectoryInfo(Path.Combine(localizationsPath, localeId));
                 Logger.Info($"{nameof(localeId)} directory: {directoryInfo.FullName}");
                 var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
                 foreach (var file in files)
@@ -200,6 +216,10 @@ namespace I18NEverywhere
         private static bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback)
         {
             var restrict = Setting.Restrict;
+            var loadLanguagePacks = Setting.CanLoadLanguagePacks;
+            Setting.LanguagePacksState +=
+                "There are language packs (The following will likely overwrite the text above, so please note the loading order):\n---\n";
+
             foreach (var modInfo in CachedInfos)
             {
                 if (Directory.Exists(Path.Combine(modInfo.Path)))
@@ -285,10 +305,112 @@ namespace I18NEverywhere
                 }
             }
 
+            foreach (var modInfo in CachedLanguagePacks)
+            {
+                if (loadLanguagePacks)
+                {
+                    if (modInfo.IsLanguagePack)
+                    {
+                        var packDirectory = new DirectoryInfo(modInfo.Path);
+                        var infoFile = Path.Combine(packDirectory.Parent.FullName, "i18n.json");
+                        if (!File.Exists(infoFile))
+                        {
+                            Logger.WarnFormat("{0} is broken, skip load.", modInfo.Name);
+                        }
+
+                        var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
+                        Setting.LanguagePacksState +=
+                            $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
+
+                        Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
+                        LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback, modInfo.Path);
+                    }
+                }
+            }
+
             return true;
         }
 
+        private static IEnumerable<PDX.SDK.Contracts.Service.Mods.Models.Mod> TrickyGetActiveMods()
+        {
+            var manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
+            var mods = manager.GetModsInActivePlayset().Result;
+            var context =
+                (IContext) typeof(PdxSdkPlatform).GetField("m_SDKContext",
+                    BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
+            var playsetResult = context.Mods.GetActivePlayset().Result;
+            return !playsetResult.Success
+                ? []
+                : mods.Where(mod => mod.Playsets.First(p => p.PlaysetId == playsetResult.PlaysetId).ModIsEnabled);
+        }
+
         private static void CacheMods()
+        {
+            if (Setting.UseNewModDetectMethod)
+            {
+                try
+                {
+                    var localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
+
+                    foreach (var localMod in localMods)
+                    {
+                        if (File.Exists(Path.Combine(localMod.FullName, "i18n.json")))
+                        {
+                            CachedLanguagePacks.Add(new ModInfo
+                            {
+                                Name = localMod.Name,
+                                Path = Path.Combine(localMod.FullName, "Localization"),
+                                IsLanguagePack = true
+                            });
+                            continue;
+                        }
+
+                        CachedInfos.Add(new ModInfo
+                            {Name = localMod.Name, Path = Path.Combine(localMod.FullName, "lang")});
+                    }
+
+                    var mods = TrickyGetActiveMods();
+
+                    foreach (var mod in mods)
+                    {
+                        if (mod.LocalData.LocalType is not LocalType.Subscribed)
+                        {
+                            continue;
+                        }
+
+                        var absolutePath = mod.LocalData.FolderAbsolutePath;
+
+                        if (File.Exists(Path.Combine(absolutePath, "i18n.json")))
+                        {
+                            CachedLanguagePacks.Add(new ModInfo
+                            {
+                                Name = mod.DisplayName, Path = Path.Combine(absolutePath, "Localization"),
+                                IsLanguagePack = true
+                            });
+                            continue;
+                        }
+
+                        CachedInfos.Add(new ModInfo
+                            {Name = mod.DisplayName, Path = Path.Combine(absolutePath, "lang")});
+                    }
+                }
+                catch (Exception trickyException)
+                {
+                    Logger.Error(trickyException, trickyException.Message);
+                    LegacyCacheMods();
+                }
+            }
+            else
+            {
+                LegacyCacheMods();
+            }
+
+            Logger.InfoFormat("Cached mods: \n{0}", string.Join("\n", CachedInfos.Select(x => $"\t\t{x.Name}")));
+            Logger.InfoFormat("Cached language packs: \n{0}",
+                string.Join("\n", CachedLanguagePacks.Select(x => $"\t\t{x.Name}")));
+        }
+
+        private static void LegacyCacheMods()
         {
             var set = new HashSet<ModInfo>();
             try
@@ -305,19 +427,17 @@ namespace I18NEverywhere
                             continue;
                         }
 
-                        var info = new ModInfo { Name = modInfo.asset.name, Path = Path.Combine(modDir, "lang") };
+                        var info = new ModInfo {Name = modInfo.asset.name, Path = Path.Combine(modDir, "lang")};
                         set.Add(info);
                     }
                 }
             }
-            catch (Exception e)
+            catch (Exception modManagerException)
             {
-                Logger.Error(e, e.Message);
+                Logger.Error(modManagerException, modManagerException.Message);
             }
 
             CachedInfos = set.ToList();
-
-            Logger.InfoFormat("Loaded Mods: \n{0}", string.Join("\n", CachedInfos.Select(x => $"\t\t{x.Name}")));
         }
 
         private void ChangeCurrentLocale()
@@ -380,30 +500,6 @@ namespace I18NEverywhere
                 progressState: ProgressState.Complete,
                 progress: 100);
             _gameLoaded = true;
-        }
-    }
-
-    public class ModInfo
-    {
-        public string Name { get; set; }
-        public string Path { get; set; }
-
-        public bool Equals(ModInfo other)
-        {
-            if (other is null)
-            {
-                return false;
-            }
-
-            return other.Path == Path;
-        }
-
-        public override int GetHashCode()
-        {
-            unchecked
-            {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Path != null ? Path.GetHashCode() : 0);
-            }
         }
     }
 }

@@ -6,9 +6,9 @@ using System.Text.RegularExpressions;
 
 namespace I18NEverywhere
 {
-    public static class Util
+    internal static class Util
     {
-        public static string SanitizeFileName(string fileName)
+        internal static string SanitizeFileName(string fileName)
         {
             var invalidChars = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
             var escapedInvalidChars = Regex.Escape(invalidChars);
@@ -33,7 +33,7 @@ namespace I18NEverywhere
         /// <summary>
         /// Migrate setting to correct path.
         /// </summary>
-        public static void MigrateSetting()
+        internal static void MigrateSetting()
         {
             var oldLocation = Path.Combine(EnvPath.kUserDataPath, "I18nEveryWhere.coc");
             var correctLocation = Path.Combine(EnvPath.kUserDataPath, "ModsSettings", "I18NEverywhere",

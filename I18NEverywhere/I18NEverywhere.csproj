@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <VersionPrefix>1.2.2</VersionPrefix>
+    <VersionPrefix>1.2.7</VersionPrefix>
     <LangVersion>12</LangVersion>
   </PropertyGroup>
 
@@ -47,6 +47,12 @@
 		  <Private>False</Private>
 		</Reference>
 		<Reference Include="Game">
+			<Private>false</Private>
+		</Reference>		
+    <Reference Include="Colossal.PSI.PdxSdk">
+			<Private>false</Private>
+		</Reference>
+    <Reference Include="PDX.SDK">
 			<Private>false</Private>
 		</Reference>
 		<Reference Include="Colossal.Core">

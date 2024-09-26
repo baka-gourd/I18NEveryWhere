@@ -16,5 +16,9 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
   "Options.WARNING[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "文件将会导出到 ModsData 文件夹",
   "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "国际化",
-  "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "本地化已加载"
+  "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "本地化已加载",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.UseNewModDetectMethod]": "启用新的检测方法",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.UseNewModDetectMethod]": "启用新的检测方法，启用后可加载语言包",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包"
 }
