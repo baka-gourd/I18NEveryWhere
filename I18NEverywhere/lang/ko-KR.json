@@ -23,5 +23,4 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "언어 팩 불러오기",
   "Menu.NOTIFICATION_TITLE[I18NEverywhere]": "I18N 번역 모드",
   "Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]": "언어 불러와짐"
-  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LanguagePacksInfos]": "여기에 언어 팩이 있습니다. (다음은 위의 텍스트를 덮어쓸 가능성이 있으므로 로딩 순서를 주의하세요.):\n---\n"
 }
