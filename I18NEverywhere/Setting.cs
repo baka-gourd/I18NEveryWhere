@@ -56,18 +56,23 @@ namespace I18NEverywhere
             }
         }
 
+        [SettingsUISection(Developer)] public bool HideLocaleAssets { get; set; }
+
         [SettingsUISection(Developer)]
         [SettingsUIDropdown(typeof(Setting), nameof(GetMods))]
         public string SelectedModDropDown { get; set; } = "None";
 
-        public static DropdownItem<string>[] GetMods()
+        public DropdownItem<string>[] GetMods()
         {
             var list = new List<DropdownItem<string>>();
             I18NEverywhere.UpdateMods();
             list.Add(new DropdownItem<string> {value = "None", displayName = "None"});
             list.Add(new DropdownItem<string> {value = "All", displayName = "All"});
-            list.AddRange(I18NEverywhere.ModsFallbackDictionary.Keys.Select(key => new DropdownItem<string>
-                {value = key, displayName = key}));
+            list.AddRange(I18NEverywhere.ModsFallbackDictionary
+                .Where(kv => !HideLocaleAssets || kv.Value is not LocaleAsset)
+                .Select(kv => kv.Key)
+                .Select(key => new DropdownItem<string>
+                    {value = key, displayName = key}));
 
             return list.ToArray();
         }
@@ -182,6 +187,12 @@ namespace I18NEverywhere
                 {
                     _mSetting.GetOptionDescLocaleID(nameof(Setting.SelectedModDropDown)),
                     "Select what do you want to export."
+                },
+
+                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.HideLocaleAssets)), "Hide Locale Assets"},
+                {
+                    _mSetting.GetOptionDescLocaleID(nameof(Setting.HideLocaleAssets)),
+                    "Restart required. Locale Assets will hide in export list."
                 },
 
                 {

@@ -12,6 +12,8 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择模组",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择需要导出的模组",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.HideLocaleAssets]": "隐藏本地化资产",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.HideLocaleAssets]": "需要重启。勾选后，本地化资产将不会在下拉列表中显示。",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
   "Options.WARNING[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "文件将会导出到 ModsData 文件夹",

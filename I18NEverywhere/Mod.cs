@@ -60,14 +60,14 @@ namespace I18NEverywhere
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
 
-            try
-            {
-                Util.MigrateSetting();
-            }
-            catch (Exception e)
-            {
-                Logger.Error(e, "Cannot migrate setting.");
-            }
+            //try
+            //{
+            //    Util.MigrateSetting();
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.Error(e, "Cannot migrate setting.");
+            //}
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
@@ -318,12 +318,19 @@ namespace I18NEverywhere
                             Logger.WarnFormat("{0} is broken, skip load.", modInfo.Name);
                         }
 
-                        var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
-                        Setting.LanguagePacksState +=
-                            $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
+                        try
+                        {
+                            var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
+                            Setting.LanguagePacksState +=
+                                $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
 
-                        Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
-                        LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback, modInfo.Path);
+                            Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
+                            LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback, modInfo.Path);
+                        }
+                        catch (Exception e)
+                        {
+                            Logger.Error(e, $"Error when load \"{packDirectory.Parent.Name}\": {e.Message}");
+                        }
                     }
                 }
             }
@@ -334,7 +341,7 @@ namespace I18NEverywhere
         private static IEnumerable<PDX.SDK.Contracts.Service.Mods.Models.Mod> TrickyGetActiveMods()
         {
             var manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
-            var mods = manager.GetModsInActivePlayset().Result;
+            var mods = manager.GetModsInActivePlayset().GetAwaiter().GetResult();
             var context =
                 (IContext) typeof(PdxSdkPlatform).GetField("m_SDKContext",
                     BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
@@ -350,23 +357,26 @@ namespace I18NEverywhere
             {
                 try
                 {
-                    var localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
-
-                    foreach (var localMod in localMods)
+                    if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "Mods")))
                     {
-                        if (File.Exists(Path.Combine(localMod.FullName, "i18n.json")))
-                        {
-                            CachedLanguagePacks.Add(new ModInfo
-                            {
-                                Name = localMod.Name,
-                                Path = Path.Combine(localMod.FullName, "Localization"),
-                                IsLanguagePack = true
-                            });
-                            continue;
-                        }
+                        var localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
 
-                        CachedInfos.Add(new ModInfo
-                            {Name = localMod.Name, Path = Path.Combine(localMod.FullName, "lang")});
+                        foreach (var localMod in localMods)
+                        {
+                            if (File.Exists(Path.Combine(localMod.FullName, "i18n.json")))
+                            {
+                                CachedLanguagePacks.Add(new ModInfo
+                                {
+                                    Name = localMod.Name,
+                                    Path = Path.Combine(localMod.FullName, "Localization"),
+                                    IsLanguagePack = true
+                                });
+                                continue;
+                            }
+
+                            CachedInfos.Add(new ModInfo
+                                {Name = localMod.Name, Path = Path.Combine(localMod.FullName, "lang")});
+                        }
                     }
 
                     var mods = TrickyGetActiveMods();
@@ -465,16 +475,17 @@ namespace I18NEverywhere
             var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)
                 ?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
             if (sources is not IEnumerable enumerable) return;
-            var counter = 0;
+            var modCounter = 0;
+            var assetCounter = 0;
             foreach (var o in enumerable)
             {
                 if (o is LocaleAsset local)
                 {
-                    ModsFallbackDictionary.Add($"{counter++}: {local.name}", o);
+                    ModsFallbackDictionary.Add($"[A]{assetCounter++}: {local.name}", o);
                     continue;
                 }
 
-                ModsFallbackDictionary.Add($"{counter++}: {o.GetType().GetFriendlyName()}", o);
+                ModsFallbackDictionary.Add($"[M]{modCounter++}: {o.GetType().GetFriendlyName()}", o);
             }
         }
 
