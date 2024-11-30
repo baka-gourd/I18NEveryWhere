@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -113,8 +113,16 @@ namespace I18NEverywhere
                 FallbackLocaleDictionary.Clear();
             }
 
-            LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback);
-            LoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback);
+            try
+            {
+                LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback);
+                LoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, $"You can ignore this error and continue. Need investigating.\n{e.Message}");
+            }
+
             Logger.Info("Locales loaded.");
             return true;
         }
@@ -233,7 +241,7 @@ namespace I18NEverywhere
                     var current = Path.Combine(modInfo.Path, localeId + ".json");
                     var fallback = Path.Combine(modInfo.Path, fallbackLocaleId + ".json");
 
-                    if (File.Exists(current))
+                    if (current is not null && File.Exists(current))
                     {
                         Logger.Info($"Load {Path.GetFileName(current)}");
                         try
@@ -269,7 +277,7 @@ namespace I18NEverywhere
 
                     if (reloadFallback)
                     {
-                        if (File.Exists(fallback))
+                        if (fallback is not null && File.Exists(fallback))
                         {
                             Logger.Info($"Load {Path.GetFileName(fallback)}");
                             try
