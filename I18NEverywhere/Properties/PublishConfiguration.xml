@@ -22,21 +22,6 @@ Keeps authors from being overwhelmed by
 1. Create a new "lang" folder in the mod folder.
 2. Add localization json, like en-US.json, zh-HANS.json.
 
-### Example (`zh-HANS.json`)
-
-{
-
-    "Options.SECTION[I18nEveryWhere.I18nEveryWhere.Mod]": "国际化",
-
-    "Options.TAB[I18nEveryWhere.I18nEveryWhere.Mod.General]": "通用",
-
-    "Options.OPTION[I18nEveryWhere.I18nEveryWhere.Mod.Setting.Overwrite]": "重写",
-
-    "Options.OPTION_DESCRIPTION[I18nEveryWhere.I18nEveryWhere.Mod.Setting.Overwrite]": "使用模组内置的语言覆盖原本的语言"
-
-}
-
-
   </LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail-1x1.png" />
@@ -47,9 +32,9 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.1" />
+  <ModVersion Value="1.3.3" />
   <!--Recommended version of the base game to use the mod-->
-  <GameVersion Value="1.1.*" />
+  <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
@@ -57,9 +42,25 @@ Keeps authors from being overwhelmed by
   <ChangeLog>
 # Changelog
 
-## 1.3.1
+## 1.3.3
 
-- add try/c for language reload.
+### Feature
+
+- Support LanguagePack in ModsData
+
+### Localization
+
+- fr-FR: upd AssetPacksManager at 2024-12-15
+- fr-FR: add CitizenModelManager at 2024-12-15
+- fr-FR: add DemandMasterPro at 2024-12-15
+- fr-FR: upd OSMExport at 2024-12-15
+- fr-FR: upd RealLife at 2024-12-15
+- fr-FR: upd RealisticWorkplacesAndHouseholds at 2024-12-15
+- fr-FR: add SuperFastBuildingAndLeveling at 2024-12-15
+- fr-FR: upd Time2Work at 2024-12-15
+- fr-FR: add TimeandWeatherAnarchy at 2024-12-15
+- fr-FR: upd TradingCostTweaker at 2024-12-15
+- fr-FR: upd ctrlC at 2024-12-15
 	</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />

@@ -22,6 +22,7 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using PDX.SDK.Contracts;
 using PDX.SDK.Contracts.Service.Mods.Enums;
+using UnityEngine;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -365,6 +366,31 @@ namespace I18NEverywhere
             {
                 try
                 {
+                    if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "ModsData")))
+                    {
+                        var modsData =
+                            new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "ModsData")).GetDirectories();
+                        foreach (var info in modsData)
+                        {
+                            if (!info.Name.EndsWith("Localization", StringComparison.InvariantCulture))
+                            {
+                                continue;
+                            }
+
+                            if (File.Exists(Path.Combine(info.FullName, "i18n.json")))
+                            {
+                                CachedLanguagePacks.Add(new ModInfo
+                                {
+                                    Name = info.Name,
+                                    Path = Path.Combine(info.FullName, "Localization"),
+                                    IsLanguagePack = true
+                                });
+
+                                Logger.InfoFormat("{0} is loaded from ModsData, make sure its updated.", info.Name);
+                            }
+                        }
+                    }
+
                     if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "Mods")))
                     {
                         var localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
