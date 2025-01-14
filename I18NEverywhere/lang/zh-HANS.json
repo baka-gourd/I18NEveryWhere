@@ -22,5 +22,7 @@
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.UseNewModDetectMethod]": "启用新的检测方法",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.UseNewModDetectMethod]": "启用新的检测方法，启用后可加载语言包",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包",
-  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包"
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SuppressNullError]": "抑制空应用异常",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SuppressNullError]": "<只会>抑制空引用异常，<不会>使得游戏更加稳定。<大部分情况下>不需要开启。"
 }
