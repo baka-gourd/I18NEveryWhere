@@ -11,10 +11,8 @@ using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
 using Colossal.PSI.PdxSdk;
-using Colossal.Serialization.Entities;
 using Game;
 using Game.Modding;
-using Game.PSI;
 using Game.SceneFlow;
 using HarmonyLib;
 using I18NEverywhere.Models;
@@ -22,7 +20,6 @@ using JetBrains.Annotations;
 using Newtonsoft.Json;
 using PDX.SDK.Contracts;
 using PDX.SDK.Contracts.Service.Mods.Enums;
-using UnityEngine;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -34,17 +31,17 @@ namespace I18NEverywhere
         public static ILog Logger { get; } = LogManager
             .GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
 
-        public static Dictionary<string, string> CurrentLocaleDictionary { get; } = new();
+        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = [];
 
-        public static Dictionary<string, string> FallbackLocaleDictionary { get; } = new();
+        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = [];
 
-        public static Dictionary<string, object> ModsFallbackDictionary { get; } = new();
+        public static Dictionary<string, object> ModsFallbackDictionary { get; } = [];
 
-        private static List<ModInfo> CachedInfos { get; set; } = [];
+        private static List<ModInfo> CachedMods { get; set; } = [];
         private static List<ModInfo> CachedLanguagePacks { get; set; } = [];
 
         [CanBeNull] private static string LocalizationsPath { get; set; }
-        private bool _gameLoaded;
+        public bool GameLoaded { get; set; }
         public event EventHandler OnLocaleLoaded;
 
         public static Setting Setting { get; private set; }
@@ -71,7 +68,7 @@ namespace I18NEverywhere
             //}
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
-            GameManager.instance.onGameLoadingComplete += OnLoadingGameComplete;
+            GameManager.instance.settings.userInterface.onSettingsApplied += ChangeCurrentLocale;
             Logger.Info("Apply harmony patching...");
             var harmony = new Harmony("Nptr.I18nEverywhere");
             var originalMethod =
@@ -84,40 +81,30 @@ namespace I18NEverywhere
 
             Setting = new Setting(this);
             Setting.RegisterInOptionsUI();
-
             AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
 
-            var localeId = GameManager.instance.localizationManager.activeLocaleId;
-            var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
-
             CacheMods();
-            Logger.Info($"{nameof(localeId)}: {localeId}");
-            Logger.Info($"{nameof(fallbackLocaleId)}: {fallbackLocaleId}");
-            if (!LoadLocales(localeId, fallbackLocaleId))
-            {
-                Logger.Error("Cannot load locales.");
-            }
-            else
-            {
-                OnLocaleLoaded?.Invoke(this, EventArgs.Empty);
-            }
-
+            updateSystem.UpdateBefore<LocalizationLoadSystem>(SystemUpdatePhase.Modification1);
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
         }
 
         public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
         {
             Logger.Info("Loading locales...");
-            CurrentLocaleDictionary.Clear();
-            if (reloadFallback)
-            {
-                FallbackLocaleDictionary.Clear();
-            }
 
             try
             {
-                LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback);
-                LoadEmbedLocales(localeId, fallbackLocaleId, reloadFallback);
+                Dictionary<string, string> currentLocaleDictionary = [], fallbackLocaleDictionary = [];
+                LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
+                    reloadFallback);
+                LoadEmbedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
+                    reloadFallback);
+
+                CurrentLocaleDictionary = currentLocaleDictionary;
+                if (reloadFallback)
+                {
+                    FallbackLocaleDictionary = fallbackLocaleDictionary;
+                }
             }
             catch (Exception e)
             {
@@ -128,7 +115,11 @@ namespace I18NEverywhere
             return true;
         }
 
-        private static bool LoadCentralizedLocales(string localeId, string fallbackLocaleId, bool reloadFallback,
+        private static bool LoadCentralizedLocales(
+            Dictionary<string, string> currentLocaleDictionary,
+            Dictionary<string, string> fallbackLocaleDictionary,
+            string localeId,
+            string fallbackLocaleId, bool reloadFallback,
             string localizationsPath = null)
         {
             localizationsPath ??= LocalizationsPath;
@@ -149,14 +140,19 @@ namespace I18NEverywhere
                     var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
                     foreach (var file in files)
                     {
+                        if (file?.Name is null)
+                        {
+                            continue;
+                        }
+
                         Logger.Info($"Load {file.Name}");
                         try
                         {
                             var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                File.ReadAllText(file.FullName)) ?? new Dictionary<string, string>();
+                                File.ReadAllText(file.FullName)) ?? [];
                             foreach (var pair in dict)
                             {
-                                if (FallbackLocaleDictionary.ContainsKey(pair.Key))
+                                if (fallbackLocaleDictionary.ContainsKey(pair.Key))
                                 {
                                     if (restrict)
                                     {
@@ -165,11 +161,11 @@ namespace I18NEverywhere
                                     }
 
                                     Logger.Info($"{pair.Key}: has be modified.");
-                                    FallbackLocaleDictionary[pair.Key] = pair.Value;
+                                    fallbackLocaleDictionary[pair.Key] = pair.Value;
                                 }
                                 else
                                 {
-                                    FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                    fallbackLocaleDictionary.Add(pair.Key, pair.Value);
                                 }
                             }
                         }
@@ -188,14 +184,19 @@ namespace I18NEverywhere
                 var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
                 foreach (var file in files)
                 {
-                    Logger.InfoFormat("Load {0}", file.Name);
+                    if (file?.Name is null || file.FullName is null)
+                    {
+                        continue;
+                    }
+
+                    Logger.Info($"Load {file.Name}");
                     try
                     {
                         var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                            File.ReadAllText(file.FullName)) ?? new Dictionary<string, string>();
+                            File.ReadAllText(file.FullName)) ?? [];
                         foreach (var pair in dict)
                         {
-                            if (CurrentLocaleDictionary.ContainsKey(pair.Key))
+                            if (currentLocaleDictionary.ContainsKey(pair.Key))
                             {
                                 if (restrict)
                                 {
@@ -204,11 +205,11 @@ namespace I18NEverywhere
                                 }
 
                                 Logger.InfoFormat("{0}: has be modified.", pair.Key);
-                                CurrentLocaleDictionary[pair.Key] = pair.Value;
+                                currentLocaleDictionary[pair.Key] = pair.Value;
                             }
                             else
                             {
-                                CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                currentLocaleDictionary.Add(pair.Key, pair.Value);
                             }
                         }
                     }
@@ -222,14 +223,20 @@ namespace I18NEverywhere
             return true;
         }
 
-        private static bool LoadEmbedLocales(string localeId, string fallbackLocaleId, bool reloadFallback)
+        private static bool LoadEmbedLocales(
+            Dictionary<string, string> currentLocaleDictionary,
+            Dictionary<string, string> fallbackLocaleDictionary,
+            string localeId,
+            string fallbackLocaleId,
+            bool reloadFallback)
         {
             var restrict = Setting.Restrict;
             var loadLanguagePacks = Setting.CanLoadLanguagePacks;
+            Setting.LanguagePacksState = string.Empty;
             Setting.LanguagePacksState +=
                 "There are language packs (The following will likely overwrite the text above, so please note the loading order):\n---\n";
 
-            foreach (var modInfo in CachedInfos)
+            foreach (var modInfo in CachedMods)
             {
                 if (Directory.Exists(Path.Combine(modInfo.Path)))
                 {
@@ -250,10 +257,10 @@ namespace I18NEverywhere
                             var currDict =
                                 JsonConvert.DeserializeObject<Dictionary<string, string>>(
                                     File.ReadAllText(current)) ??
-                                new Dictionary<string, string>();
+                                [];
                             foreach (var pair in currDict)
                             {
-                                if (CurrentLocaleDictionary.ContainsKey(pair.Key))
+                                if (currentLocaleDictionary.ContainsKey(pair.Key))
                                 {
                                     if (restrict)
                                     {
@@ -261,12 +268,12 @@ namespace I18NEverywhere
                                         continue;
                                     }
 
-                                    Logger.Info($"{pair.Key}: has be modified");
-                                    CurrentLocaleDictionary[pair.Key] = pair.Value;
+                                    Logger.Info($"{pair.Key} has be modified");
+                                    currentLocaleDictionary[pair.Key] = pair.Value;
                                 }
                                 else
                                 {
-                                    CurrentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    currentLocaleDictionary.Add(pair.Key, pair.Value);
                                 }
                             }
                         }
@@ -285,10 +292,10 @@ namespace I18NEverywhere
                             {
                                 var fallbackDict =
                                     JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                        File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
+                                        File.ReadAllText(fallback)) ?? [];
                                 foreach (var pair in fallbackDict)
                                 {
-                                    if (FallbackLocaleDictionary.ContainsKey(pair.Key))
+                                    if (fallbackLocaleDictionary.ContainsKey(pair.Key))
                                     {
                                         if (restrict)
                                         {
@@ -297,11 +304,11 @@ namespace I18NEverywhere
                                         }
 
                                         Logger.Info($"{pair.Key}: has be modified.");
-                                        FallbackLocaleDictionary[pair.Key] = pair.Value;
+                                        fallbackLocaleDictionary[pair.Key] = pair.Value;
                                     }
                                     else
                                     {
-                                        FallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                        fallbackLocaleDictionary.Add(pair.Key, pair.Value);
                                     }
                                 }
                             }
@@ -334,7 +341,8 @@ namespace I18NEverywhere
                                 $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
 
                             Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
-                            LoadCentralizedLocales(localeId, fallbackLocaleId, reloadFallback, modInfo.Path);
+                            LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId,
+                                fallbackLocaleId, reloadFallback, modInfo.Path);
                         }
                         catch (Exception e)
                         {
@@ -408,7 +416,7 @@ namespace I18NEverywhere
                                 continue;
                             }
 
-                            CachedInfos.Add(new ModInfo
+                            CachedMods.Add(new ModInfo
                                 {Name = localMod.Name, Path = Path.Combine(localMod.FullName, "lang")});
                         }
                     }
@@ -434,7 +442,7 @@ namespace I18NEverywhere
                             continue;
                         }
 
-                        CachedInfos.Add(new ModInfo
+                        CachedMods.Add(new ModInfo
                             {Name = mod.DisplayName, Path = Path.Combine(absolutePath, "lang")});
                     }
                 }
@@ -449,7 +457,7 @@ namespace I18NEverywhere
                 LegacyCacheMods();
             }
 
-            Logger.InfoFormat("Cached mods: \n{0}", string.Join("\n", CachedInfos.Select(x => $"\t\t{x.Name}")));
+            Logger.InfoFormat("Cached mods: \n{0}", string.Join("\n", CachedMods.Select(x => $"\t\t{x.Name}")));
             Logger.InfoFormat("Cached language packs: \n{0}",
                 string.Join("\n", CachedLanguagePacks.Select(x => $"\t\t{x.Name}")));
         }
@@ -481,12 +489,25 @@ namespace I18NEverywhere
                 Logger.Error(modManagerException, modManagerException.Message);
             }
 
-            CachedInfos = set.ToList();
+            CachedMods = [.. set];
         }
 
         private void ChangeCurrentLocale()
         {
-            if (_gameLoaded)
+            if (GameLoaded)
+            {
+                var localeId = GameManager.instance.localizationManager.activeLocaleId;
+                var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+                if (!LoadLocales(localeId, fallbackLocaleId, false))
+                {
+                    Logger.Error("Cannot reload locales.");
+                }
+            }
+        }
+
+        private void ChangeCurrentLocale(Game.Settings.Setting s)
+        {
+            if (GameLoaded)
             {
                 var localeId = GameManager.instance.localizationManager.activeLocaleId;
                 var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
@@ -533,18 +554,12 @@ namespace I18NEverywhere
             }
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;
-            GameManager.instance.onGameLoadingComplete -= OnLoadingGameComplete;
+            GameManager.instance.settings.userInterface.onSettingsApplied -= ChangeCurrentLocale;
         }
 
-        private void OnLoadingGameComplete(Purpose p, GameMode m)
+        public void InvokeEvent()
         {
-            if (_gameLoaded) return;
-            NotificationSystem.Pop("i18n-load", delay: 10f,
-                titleId: "I18NEverywhere",
-                textId: "I18NEverywhere.Detail",
-                progressState: ProgressState.Complete,
-                progress: 100);
-            _gameLoaded = true;
+            OnLocaleLoaded?.Invoke(this, EventArgs.Empty);
         }
     }
 }

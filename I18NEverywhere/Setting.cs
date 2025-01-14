@@ -1,4 +1,4 @@
-﻿using Colossal;
+using Colossal;
 using Colossal.IO.AssetDatabase;
 using Game.Modding;
 using Game.SceneFlow;
@@ -55,6 +55,8 @@ namespace I18NEverywhere
                 I18NEverywhere.LoadLocales(localeId, fallbackLocaleId, reloadFallback: true);
             }
         }
+
+        [SettingsUISection(Developer)] public bool SuppressNullError { get; set; }
 
         [SettingsUISection(Developer)] public bool HideLocaleAssets { get; set; }
 
@@ -143,6 +145,7 @@ namespace I18NEverywhere
             Restrict = false;
             LogKey = false;
             UseNewModDetectMethod = true;
+            SuppressNullError = false;
         }
     }
 
@@ -218,6 +221,11 @@ namespace I18NEverywhere
                 },
                 {_mSetting.GetOptionLabelLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
                 {_mSetting.GetOptionDescLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
+                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.SuppressNullError)), "Suppress NullReferenceException"},
+                {
+                    _mSetting.GetOptionDescLocaleID(nameof(Setting.SuppressNullError)),
+                    "<ONLY> suppress NullReference Exception, will <NOT> make game more stable. <MOST> of the time you don't need to turn it on."
+                },
 
                 {"Menu.NOTIFICATION_TITLE[I18NEverywhere]", "I18N Everywhere"},
                 {"Menu.NOTIFICATION_DESCRIPTION[I18NEverywhere.Detail]", "Localization loaded."},

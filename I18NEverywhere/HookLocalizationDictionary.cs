@@ -9,6 +9,8 @@ namespace I18NEverywhere
 {
     public class HookLocalizationDictionary
     {
+        const string InfoKey = "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LanguagePacksInfos]";
+
         public static bool Prefix(string entryID, ref string value, ref bool __result,
             LocalizationDictionary __instance)
         {
@@ -31,9 +33,19 @@ namespace I18NEverywhere
             if (entryID == null)
             {
                 value = "ERR: WHY NULL";
-                var ex = new ArgumentNullException(nameof(entryID),
-                    "WHY NULL? If you see this, please ask for help from others as this is caused by other mods.");
-                I18NEverywhere.Logger.Error(ex, ex.Message);
+                if (!I18NEverywhere.Setting.SuppressNullError)
+                {
+                    var ex = new ArgumentNullException(nameof(entryID),
+                        "WHY NULL? If you see this, please ask for help from others as this is caused by other mods.");
+                    I18NEverywhere.Logger.Error(ex, ex.Message);
+                }
+                __result = true;
+                return false;
+            }
+
+            if (entryID == InfoKey)
+            {
+                value = I18NEverywhere.Setting.LanguagePacksState;
                 __result = true;
                 return false;
             }
