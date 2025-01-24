@@ -7,19 +7,61 @@
   <ShortDescription Value="Provide i18n injector for every mods" />
   <!--Long description of the mod. Single line or multi line. Supports minimal markdown subset-->
   <!--LongDescription Value="Provide i18n injector for every mods" /-->
-  <LongDescription># I18n EveryWhere
+  <LongDescription># I18n Everywhere
 
-Provides convenient localization features to reduce the burden on authors and provide centralized coverage.
+This mod offers various methods to simplify the localization of game mods, including:
 
-Keeps authors from being overwhelmed by
+- Embedded locale files
+- Centralized locale files
+- Language packs
 
-- Self-implemented language file loading
-- Handling different text encodings
+This primarily addresses issues where some mods lack a way to submit localization files, do not implement localization, or experience localization failures or unpublished updates due to infrequent updates.
 
-## Usage
+Of course, using this mod makes implementing localization much simpler.
 
-1. Create a new "lang" folder in the mod folder.
-2. Add localization json, like en-US.json, zh-HANS.json.</LongDescription>
+## Features
+
+### Embedded Locale Files
+
+Streamline localization by reducing the workload for mod authors while ensuring centralized support.
+
+This method eliminates the need for authors to:
+
+- Implement custom language file loading
+- Handle different text encodings manually
+
+#### How to Use
+
+1. Create a folder named **"lang"** in your mod directory.
+2. Add localization files in JSON format, such as `en-US.json` or `zh-HANS.json`.
+
+---
+
+### Centralized Locale Files
+
+Contribute your localization files to the community through platforms like [GitHub][github], [Discord][discord], or ParatransZ.
+
+Updates are typically rolled out on a **weekly** or **bi-weekly** basis and included in new mod versions.
+
+---
+
+### Language Packs
+
+Create and manage custom language packs to maintain full control over your localization.
+
+#### Steps to Create a Language Pack
+
+1. Add an `i18n.json` file to the root directory of your mod.
+2. Organize your files in a structure similar to the [Localization directory on GitHub][github].
+3. Add **I18NE** as a dependency in your mod.
+
+#### Example
+
+[European Portuguese Localization][pt] by Ti4goc
+
+[github]: https://github.com/baka-gourd/I18NEverywhere.Localization
+[discord]: https://discord.com/channels/1024242828114673724/1224162446537654393
+[pt]: https://mods.paradoxplaza.com/mods/92599/Windows</LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail-1x1.png" />
   <!--Screenshot, can be set multiple times-->
@@ -29,18 +71,18 @@ Keeps authors from being overwhelmed by
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.3.5" />
+  <ModVersion Value="1.3.7" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.2.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <!--<ChangeLog Value="" />-->
-  <ChangeLog># 1.3.5
+  <ChangeLog># 1.3.7
 
 ## Fix
 
-- small load stage change</ChangeLog>
+- fix export function in new game version, special thanks yenyang.</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
   <ExternalLink Type="patreon" Url="https://www.patreon.com/Nullpinter" />

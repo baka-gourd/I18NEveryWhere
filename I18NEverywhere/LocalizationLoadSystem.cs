@@ -66,6 +66,7 @@ public partial class LocalizationLoadSystem : GameSystemBase
                 progressState: ProgressState.Complete,
                 progress: 100);
             I18NEverywhere.Instance.GameLoaded = true;
+            I18NEverywhere.SettingVersion += 1;
         }
     }
 

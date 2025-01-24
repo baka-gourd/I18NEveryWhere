@@ -1,5 +1,5 @@
-# 1.3.5
+# 1.3.7
 
 ## Fix
 
-- small load stage change
+- fix export function in new game version, special thanks yenyang.

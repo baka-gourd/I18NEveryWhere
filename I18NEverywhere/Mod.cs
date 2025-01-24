@@ -46,6 +46,7 @@ namespace I18NEverywhere
 
         public static Setting Setting { get; private set; }
         public static I18NEverywhere Instance { get; private set; }
+        public static int SettingVersion { get; set; }
 
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -521,6 +522,10 @@ namespace I18NEverywhere
         public static void UpdateMods()
         {
             ModsFallbackDictionary.Clear();
+            if (!Instance.GameLoaded)
+            {
+                return;
+            }
             var localeInfo =
                 typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic | BindingFlags.Instance);
             var localeInfos = typeof(LocalizationManager)

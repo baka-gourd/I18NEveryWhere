@@ -12,8 +12,8 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LogKey]": "当查询本地化时打印键值",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择模组",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SelectedModDropDown]": "选择需要导出的模组",
-  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.HideLocaleAssets]": "隐藏本地化资产",
-  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.HideLocaleAssets]": "需要重启。勾选后，本地化资产将不会在下拉列表中显示。",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LocaleType]": "本地化资产类型",
+  "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LocaleType]": "本地化资产类型",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "导出所选本地化",
   "Options.WARNING[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.ExportModLocalization]": "文件将会导出到 ModsData 文件夹",
@@ -23,6 +23,6 @@
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.UseNewModDetectMethod]": "启用新的检测方法，启用后可加载语言包",
   "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.LoadLanguagePacks]": "加载语言包",
-  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SuppressNullError]": "抑制空应用异常",
+  "Options.OPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SuppressNullError]": "抑制空引用异常",
   "Options.OPTION_DESCRIPTION[I18NEverywhere.I18NEverywhere.I18NEverywhere.Setting.SuppressNullError]": "<只会>抑制空引用异常，<不会>使得游戏更加稳定。<大部分情况下>不需要开启。"
 }

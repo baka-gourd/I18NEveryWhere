@@ -9,6 +9,7 @@ using System.Linq;
 using Game.UI.Widgets;
 using Newtonsoft.Json;
 using Colossal.PSI.Environment;
+using Game.UI.Localization;
 
 namespace I18NEverywhere
 {
@@ -58,10 +59,14 @@ namespace I18NEverywhere
 
         [SettingsUISection(Developer)] public bool SuppressNullError { get; set; }
 
-        [SettingsUISection(Developer)] public bool HideLocaleAssets { get; set; }
+        [SettingsUISection(Developer)]
+        [SettingsUIDropdown(typeof(Setting), nameof(GetTypes))]
+        [SettingsUISetter(typeof(Setting), nameof(IncrementVersion))]
+        public string LocaleType { get; set; } = "All";
 
         [SettingsUISection(Developer)]
         [SettingsUIDropdown(typeof(Setting), nameof(GetMods))]
+        [SettingsUIValueVersion(typeof(I18NEverywhere), nameof(I18NEverywhere.SettingVersion))]
         public string SelectedModDropDown { get; set; } = "None";
 
         public DropdownItem<string>[] GetMods()
@@ -71,11 +76,31 @@ namespace I18NEverywhere
             list.Add(new DropdownItem<string> {value = "None", displayName = "None"});
             list.Add(new DropdownItem<string> {value = "All", displayName = "All"});
             list.AddRange(I18NEverywhere.ModsFallbackDictionary
-                .Where(kv => !HideLocaleAssets || kv.Value is not LocaleAsset)
+                .Where(kv =>
+                {
+                    return LocaleType switch
+                    {
+                        "All" => true,
+                        "Mod" => kv.Value is not LocaleAsset,
+                        "LocaleAsset" => kv.Value is LocaleAsset,
+                        _ => false
+                    };
+                })
                 .Select(kv => kv.Key)
                 .Select(key => new DropdownItem<string>
                     {value = key, displayName = key}));
 
+            return list.ToArray();
+        }
+
+        public DropdownItem<string>[] GetTypes()
+        {
+            var list = new DropdownItem<string>[]
+            {
+                new() {value = "All", displayName = LocalizedString.Value("All")},
+                new() {value = "LocaleAsset", displayName = LocalizedString.Value("LocaleAsset")},
+                new() {value = "Mod", displayName = LocalizedString.Value("Mod")}
+            };
             return list.ToArray();
         }
 
@@ -147,6 +172,11 @@ namespace I18NEverywhere
             UseNewModDetectMethod = true;
             SuppressNullError = false;
         }
+
+        public static void IncrementVersion(string _)
+        {
+            I18NEverywhere.SettingVersion += 1;
+        }
     }
 
     // ReSharper disable once InconsistentNaming
@@ -192,10 +222,10 @@ namespace I18NEverywhere
                     "Select what do you want to export."
                 },
 
-                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.HideLocaleAssets)), "Hide Locale Assets"},
+                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.LocaleType)), "Locale Type"},
                 {
-                    _mSetting.GetOptionDescLocaleID(nameof(Setting.HideLocaleAssets)),
-                    "Restart required. Locale Assets will hide in export list."
+                    _mSetting.GetOptionDescLocaleID(nameof(Setting.LocaleType)),
+                    "Locale Assets Type."
                 },
 
                 {
@@ -221,7 +251,10 @@ namespace I18NEverywhere
                 },
                 {_mSetting.GetOptionLabelLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
                 {_mSetting.GetOptionDescLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
-                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.SuppressNullError)), "Suppress NullReferenceException"},
+                {
+                    _mSetting.GetOptionLabelLocaleID(nameof(Setting.SuppressNullError)),
+                    "Suppress NullReferenceException"
+                },
                 {
                     _mSetting.GetOptionDescLocaleID(nameof(Setting.SuppressNullError)),
                     "<ONLY> suppress NullReference Exception, will <NOT> make game more stable. <MOST> of the time you don't need to turn it on."
