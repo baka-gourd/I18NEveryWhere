@@ -1,9 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -11,15 +5,30 @@ using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
 using Colossal.PSI.PdxSdk;
+
 using Game;
 using Game.Modding;
+using Game.PSI;
 using Game.SceneFlow;
+
 using HarmonyLib;
+
 using I18NEverywhere.Models;
+
 using JetBrains.Annotations;
+
 using Newtonsoft.Json;
+
 using PDX.SDK.Contracts;
 using PDX.SDK.Contracts.Service.Mods.Enums;
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -41,12 +50,13 @@ namespace I18NEverywhere
         private static List<ModInfo> CachedLanguagePacks { get; set; } = [];
 
         [CanBeNull] private static string LocalizationsPath { get; set; }
+        private Guid? Updater { get; set; }
         public bool GameLoaded { get; set; }
         public event EventHandler OnLocaleLoaded;
 
         public static Setting Setting { get; private set; }
         public static I18NEverywhere Instance { get; private set; }
-        public static int SettingVersion { get; set; }
+        private static int _settingVersion;
 
         public void OnLoad(UpdateSystem updateSystem)
         {
@@ -59,14 +69,14 @@ namespace I18NEverywhere
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
 
-            //try
-            //{
-            //    Util.MigrateSetting();
-            //}
-            //catch (Exception e)
-            //{
-            //    Logger.Error(e, "Cannot migrate setting.");
-            //}
+            try
+            {
+                Util.MigrateSetting();
+            }
+            catch (Exception e)
+            {
+                Logger.Warn(e, "Cannot migrate setting.");
+            }
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.settings.userInterface.onSettingsApplied += ChangeCurrentLocale;
@@ -85,8 +95,8 @@ namespace I18NEverywhere
             AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
 
             CacheMods();
-            updateSystem.UpdateBefore<LocalizationLoadSystem>(SystemUpdatePhase.Modification1);
             GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
+            Updater = GameManager.instance.RegisterUpdater(InitWhenGameAvailable);
         }
 
         public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
@@ -526,8 +536,9 @@ namespace I18NEverywhere
             {
                 return;
             }
+
             var localeInfo =
-                typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+                typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic);
             var localeInfos = typeof(LocalizationManager)
                 .GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)
                 ?.GetValue(GameManager.instance.localizationManager);
@@ -558,6 +569,11 @@ namespace I18NEverywhere
                 Setting = null;
             }
 
+            if (Updater.HasValue)
+            {
+                GameManager.instance.UnregisterUpdater(Updater.Value);
+            }
+
             GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;
             GameManager.instance.settings.userInterface.onSettingsApplied -= ChangeCurrentLocale;
         }
@@ -565,6 +581,56 @@ namespace I18NEverywhere
         public void InvokeEvent()
         {
             OnLocaleLoaded?.Invoke(this, EventArgs.Empty);
+        }
+
+        public static int GetVersion()
+        {
+            return _settingVersion;
+        }
+
+        public static void IncrementVersion()
+        {
+            Interlocked.Increment(ref _settingVersion);
+        }
+
+        private bool InitWhenGameAvailable()
+        {
+            if (!GameManager.instance.modManager.isInitialized ||
+                GameManager.instance.gameMode != GameMode.MainMenu ||
+                GameManager.instance.state == GameManager.State.Loading ||
+                GameManager.instance.state == GameManager.State.Booting
+               ) return false;
+
+            var localeId = GameManager.instance.localizationManager.activeLocaleId;
+            var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+            Logger.Info("Init Load.");
+            Logger.Info($"{nameof(localeId)}: {localeId}");
+            Logger.Info($"{nameof(fallbackLocaleId)}: {fallbackLocaleId}");
+
+            if (!LoadLocales(localeId, fallbackLocaleId))
+            {
+                Logger.Error("Cannot load locales.");
+            }
+            else
+            {
+                Instance.InvokeEvent();
+            }
+
+            if (Instance.GameLoaded)
+            {
+                return true;
+            }
+
+            NotificationSystem.Pop("i18n-load", delay: 10f,
+                titleId: "I18NEverywhere",
+                textId: "I18NEverywhere.Detail",
+                progressState: ProgressState.Complete,
+                progress: 100);
+            Instance.GameLoaded = true;
+            UpdateMods();
+            IncrementVersion();
+            Logger.InfoFormat("I18NEverywhere initialized on {0}", GameManager.instance.gameMode);
+            return true;
         }
     }
 }

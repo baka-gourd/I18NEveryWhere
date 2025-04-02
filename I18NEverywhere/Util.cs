@@ -1,4 +1,4 @@
-﻿using Colossal.PSI.Environment;
+using Colossal.PSI.Environment;
 using System;
 using System.IO;
 using System.Linq;
@@ -48,11 +48,11 @@ namespace I18NEverywhere
             }
 
             // Handle FallbackSettings.coc
-            var fallbackLocation = Path.Combine(EnvPath.kUserDataPath, "FallbackSettings.coc");
-            if (File.Exists(fallbackLocation))
-            {
-                MigrateFile(fallbackLocation, correctLocation);
-            }
+            //var fallbackLocation = Path.Combine(EnvPath.kUserDataPath, "FallbackSettings.coc");
+            //if (File.Exists(fallbackLocation))
+            //{
+            //    MigrateFile(fallbackLocation, correctLocation);
+            //}
         }
 
         private static void MigrateMisMigratedSetting()

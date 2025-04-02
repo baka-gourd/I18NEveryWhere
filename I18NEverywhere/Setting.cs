@@ -66,15 +66,17 @@ namespace I18NEverywhere
 
         [SettingsUISection(Developer)]
         [SettingsUIDropdown(typeof(Setting), nameof(GetMods))]
-        [SettingsUIValueVersion(typeof(I18NEverywhere), nameof(I18NEverywhere.SettingVersion))]
+        [SettingsUIValueVersion(typeof(I18NEverywhere), "GetVersion")]
         public string SelectedModDropDown { get; set; } = "None";
 
         public DropdownItem<string>[] GetMods()
         {
-            var list = new List<DropdownItem<string>>();
+            var list = new List<DropdownItem<string>>
+            {
+                new() {value = "None", displayName = "None"},
+                new() {value = "All", displayName = "All"}
+            };
             I18NEverywhere.UpdateMods();
-            list.Add(new DropdownItem<string> {value = "None", displayName = "None"});
-            list.Add(new DropdownItem<string> {value = "All", displayName = "All"});
             list.AddRange(I18NEverywhere.ModsFallbackDictionary
                 .Where(kv =>
                 {
@@ -93,7 +95,7 @@ namespace I18NEverywhere
             return list.ToArray();
         }
 
-        public DropdownItem<string>[] GetTypes()
+        public static DropdownItem<string>[] GetTypes()
         {
             var list = new DropdownItem<string>[]
             {
@@ -175,7 +177,7 @@ namespace I18NEverywhere
 
         public static void IncrementVersion(string _)
         {
-            I18NEverywhere.SettingVersion += 1;
+             I18NEverywhere.IncrementVersion();
         }
     }
 
