@@ -1,5 +1,7 @@
 # I18n Everywhere
 
+Anti-virus report: [VirusTotal][vt]
+
 This mod offers various methods to simplify the localization of game mods, including:
 
 - Embedded locale files
@@ -53,3 +55,4 @@ Create and manage custom language packs to maintain full control over your local
 [github]: https://github.com/baka-gourd/I18NEverywhere.Localization
 [discord]: https://discord.com/channels/1024242828114673724/1224162446537654393
 [pt]: https://mods.paradoxplaza.com/mods/92599/Windows
+[vt]: https://www.virustotal.com/gui/file/e586ed8cf1a7efdbbdfb551a9c43089bb79934f20a71f5af7e7cb6ce91de6f56
