@@ -5,23 +5,16 @@ using Colossal.Logging.Utils;
 using Colossal.PSI.Common;
 using Colossal.PSI.Environment;
 using Colossal.PSI.PdxSdk;
-
 using Game;
 using Game.Modding;
 using Game.PSI;
 using Game.SceneFlow;
-
 using HarmonyLib;
-
 using I18NEverywhere.Models;
-
 using JetBrains.Annotations;
-
 using Newtonsoft.Json;
-
 using PDX.SDK.Contracts;
 using PDX.SDK.Contracts.Service.Mods.Enums;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -29,6 +22,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Mod = PDX.SDK.Contracts.Service.Mods.Models.Mod;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
 
@@ -40,14 +34,14 @@ namespace I18NEverywhere
         public static ILog Logger { get; } = LogManager
             .GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
 
-        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = [];
+        public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = new();
 
-        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = [];
+        public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new();
 
-        public static Dictionary<string, object> ModsFallbackDictionary { get; } = [];
+        public static Dictionary<string, object> ModsFallbackDictionary { get; } = new();
 
-        private static List<ModInfo> CachedMods { get; set; } = [];
-        private static List<ModInfo> CachedLanguagePacks { get; set; } = [];
+        private static List<ModInfo> CachedMods { get; set; } = new();
+        private static List<ModInfo> CachedLanguagePacks { get; set; } = new();
 
         [CanBeNull] private static string LocalizationsPath { get; set; }
         private Guid? Updater { get; set; }
@@ -105,7 +99,7 @@ namespace I18NEverywhere
 
             try
             {
-                Dictionary<string, string> currentLocaleDictionary = [], fallbackLocaleDictionary = [];
+                Dictionary<string, string> currentLocaleDictionary = new(), fallbackLocaleDictionary = new();
                 LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
                     reloadFallback);
                 LoadEmbedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
@@ -366,7 +360,7 @@ namespace I18NEverywhere
             return true;
         }
 
-        private static IEnumerable<PDX.SDK.Contracts.Service.Mods.Models.Mod> TrickyGetActiveMods()
+        private static IEnumerable<Mod> TrickyGetActiveMods()
         {
             var manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
             var mods = manager.GetModsInActivePlayset().GetAwaiter().GetResult();
@@ -375,8 +369,8 @@ namespace I18NEverywhere
                     BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
             var playsetResult = context.Mods.GetActivePlayset().Result;
             return !playsetResult.Success
-                ? []
-                : mods.Where(mod => mod.Playsets.First(p => p.PlaysetId == playsetResult.PlaysetId).ModIsEnabled);
+                ? new List<Mod>()
+                : playsetResult.Mods.Where(m => !string.IsNullOrEmpty(m.LocalData.FolderAbsolutePath));
         }
 
         private static void CacheMods()
@@ -500,7 +494,7 @@ namespace I18NEverywhere
                 Logger.Error(modManagerException, modManagerException.Message);
             }
 
-            CachedMods = [.. set];
+            CachedMods = set.ToList();
         }
 
         private void ChangeCurrentLocale()

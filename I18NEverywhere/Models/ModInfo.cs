@@ -1,26 +1,27 @@
-﻿namespace I18NEverywhere.Models;
-
-public class ModInfo
+namespace I18NEverywhere.Models
 {
-    public string Name { get; set; }
-    public string Path { get; set; }
-    public bool IsLanguagePack { get; set; }
-
-    public bool Equals(ModInfo other)
+    public class ModInfo
     {
-        if (other is null)
+        public string Name { get; set; }
+        public string Path { get; set; }
+        public bool IsLanguagePack { get; set; }
+
+        public bool Equals(ModInfo other)
         {
-            return false;
+            if (other is null)
+            {
+                return false;
+            }
+
+            return other.Path == Path;
         }
 
-        return other.Path == Path;
-    }
-
-    public override int GetHashCode()
-    {
-        unchecked
+        public override int GetHashCode()
         {
-            return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Path != null ? Path.GetHashCode() : 0);
+            unchecked
+            {
+                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Path != null ? Path.GetHashCode() : 0);
+            }
         }
     }
 }
