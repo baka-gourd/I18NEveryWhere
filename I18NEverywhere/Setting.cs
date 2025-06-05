@@ -4,13 +4,15 @@ using Game.Modding;
 using Game.SceneFlow;
 using Game.Settings;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Game.UI.Widgets;
 using Newtonsoft.Json;
 using Colossal.PSI.Environment;
 using Game.UI.Localization;
-
+// ReSharper disable ValueParameterNotUsed
+#pragma warning disable CA1822
 namespace I18NEverywhere
 {
     [FileLocation("ModsSettings\\I18NEverywhere\\I18NEverywhere")]
@@ -44,9 +46,7 @@ namespace I18NEverywhere
 
         [SettingsUISection(Developer)]
         [SettingsUIButton]
-#pragma warning disable CA1822
         public bool ReloadLocalization
-#pragma warning restore CA1822
         {
             // ReSharper disable once ValueParameterNotUsed
             set
@@ -153,13 +153,38 @@ namespace I18NEverywhere
                         .ToDictionary(pair => pair.Key, pair => pair.Value);
                     var str = JsonConvert.SerializeObject(dict, Formatting.Indented);
                     File.WriteAllText(
-                        System.IO.Path.Combine(dir.FullName, Util.SanitizeFileName(SelectedModDropDown + ".json")),
+                        Path.Combine(dir.FullName, Util.SanitizeFileName(SelectedModDropDown + ".json")),
                         str);
                 }
             }
         }
 
         public bool NewModDetectMethodEnabled => UseNewModDetectMethod;
+
+        [SettingsUISection(Developer)]
+        [SettingsUIButton]
+        public bool OpenDirectory
+        {
+            set
+            {
+                var directory = Path.Combine(
+                    EnvPath.kUserDataPath,
+                    "ModsData",
+                    "I18NEverywhere");
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = directory,
+                    UseShellExecute = true
+                };
+
+                Process.Start(psi);
+            }
+        }
 
         [SettingsUIMultilineText] public string LanguagePacksInfos => string.Empty;
 
@@ -253,6 +278,8 @@ namespace I18NEverywhere
                 },
                 {_mSetting.GetOptionLabelLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
                 {_mSetting.GetOptionDescLocaleID(nameof(Setting.LoadLanguagePacks)), "Load language packs"},
+                {_mSetting.GetOptionLabelLocaleID(nameof(Setting.OpenDirectory)), "Open Directory"},
+                {_mSetting.GetOptionDescLocaleID(nameof(Setting.OpenDirectory)), "Open Directory"},
                 {
                     _mSetting.GetOptionLabelLocaleID(nameof(Setting.SuppressNullError)),
                     "Suppress NullReferenceException"
