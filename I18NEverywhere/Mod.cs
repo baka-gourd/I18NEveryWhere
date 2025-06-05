@@ -124,109 +124,217 @@ namespace I18NEverywhere
             Dictionary<string, string> currentLocaleDictionary,
             Dictionary<string, string> fallbackLocaleDictionary,
             string localeId,
-            string fallbackLocaleId, bool reloadFallback,
+            string fallbackLocaleId,
+            bool reloadFallback,
             string localizationsPath = null)
         {
             localizationsPath ??= LocalizationsPath;
-
             var restrict = Setting.Restrict;
+
             if (string.IsNullOrEmpty(localizationsPath))
             {
                 Logger.Warn("Cannot find localization path!");
                 return false;
             }
 
-            if (reloadFallback)
+            var bundlePath = Path.Combine(localizationsPath, "Locale.lb");
+            if (File.Exists(bundlePath))
             {
-                if (Directory.Exists(Path.Combine(localizationsPath, fallbackLocaleId)))
+                try
                 {
-                    var directoryInfo = new DirectoryInfo(Path.Combine(localizationsPath, fallbackLocaleId));
-                    Logger.Info($"{nameof(fallbackLocaleId)} directory: {directoryInfo.FullName}");
-                    var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
-                    foreach (var file in files)
-                    {
-                        if (file?.Name is null)
-                        {
-                            continue;
-                        }
+                    using var bundle = LanguageBundle.ReadBundle(bundlePath);
+                    Logger.Info($"Loaded bundle: {bundlePath} (IsCentralized={bundle.IsCentralized})");
 
-                        Logger.Info($"Load {file.Name}");
+                    if (!bundle.IsCentralized)
+                    {
+                        if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
+                        {
+                            string entryName = $"{localeId}.json";
+                            Logger.Info($"Load {entryName} from {bundlePath}");
+                            try
+                            {
+                                var dict = bundle.ReadContent(localeId);
+                                foreach (var kv in dict)
+                                {
+                                    if (currentLocaleDictionary.ContainsKey(kv.Key))
+                                    {
+                                        if (restrict)
+                                        {
+                                            Logger.Warn($"{kv.Key}: overlap, skipped.");
+                                            continue;
+                                        }
+
+                                        Logger.Info($"{kv.Key}: overwritten.");
+                                        currentLocaleDictionary[kv.Key] = kv.Value;
+                                    }
+                                    else
+                                    {
+                                        currentLocaleDictionary.Add(kv.Key, kv.Value);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error(ex, $"Error reading {entryName}: {ex.Message}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
+                        {
+                            Logger.Info($"Load all JSON under directory \"{localeId}/\" from {bundlePath}");
+                            try
+                            {
+                                var dict = bundle.ReadContent(localeId);
+                                foreach (var kv in dict)
+                                {
+                                    if (currentLocaleDictionary.ContainsKey(kv.Key))
+                                    {
+                                        if (restrict)
+                                        {
+                                            Logger.Warn($"{kv.Key}: overlap, skipped.");
+                                            continue;
+                                        }
+
+                                        Logger.Info($"{kv.Key}: overwritten.");
+                                        currentLocaleDictionary[kv.Key] = kv.Value;
+                                    }
+                                    else
+                                    {
+                                        currentLocaleDictionary.Add(kv.Key, kv.Value);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error(ex, $"Error reading {localeId} directory: {ex.Message}");
+                            }
+                        }
+                    }
+
+                    if (reloadFallback &&
+                        bundle.IncludedLanguage.Contains(fallbackLocaleId, StringComparer.InvariantCultureIgnoreCase))
+                    {
+                        Logger.Info($"Load all JSON under directory \"{fallbackLocaleId}/\" from {bundlePath}");
                         try
                         {
-                            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                File.ReadAllText(file.FullName)) ?? [];
-                            foreach (var pair in dict)
+                            var fallbackDict = bundle.ReadContent(fallbackLocaleId);
+                            foreach (var kv in fallbackDict)
                             {
-                                if (fallbackLocaleDictionary.ContainsKey(pair.Key))
+                                if (fallbackLocaleDictionary.ContainsKey(kv.Key))
                                 {
                                     if (restrict)
                                     {
-                                        Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                        Logger.Warn($"{kv.Key}: overlap, skipped.");
                                         continue;
                                     }
 
-                                    Logger.Info($"{pair.Key}: has be modified.");
-                                    fallbackLocaleDictionary[pair.Key] = pair.Value;
+                                    Logger.Info($"{kv.Key}: overwritten.");
+                                    fallbackLocaleDictionary[kv.Key] = kv.Value;
                                 }
                                 else
                                 {
-                                    fallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                    fallbackLocaleDictionary.Add(kv.Key, kv.Value);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Logger.Error(ex, $"Error reading fallback {fallbackLocaleId} directory: {ex.Message}");
+                        }
+                    }
+
+                    return true;
+                }
+                catch (Exception bundleEx)
+                {
+                    Logger.Error(bundleEx, $"Error loading bundle {bundlePath}: {bundleEx.Message}");
+                }
+            }
+
+            if (reloadFallback)
+            {
+                var fallbackDir = Path.Combine(localizationsPath, fallbackLocaleId);
+                if (Directory.Exists(fallbackDir))
+                {
+                    Logger.Info($"Loading fallback directory: {fallbackDir}");
+                    var files = new DirectoryInfo(fallbackDir).GetFiles("*.json", SearchOption.AllDirectories);
+                    foreach (var file in files)
+                    {
+                        try
+                        {
+                            var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                                           File.ReadAllText(file.FullName))
+                                       ?? new Dictionary<string, string>();
+                            foreach (var kv in dict)
+                            {
+                                if (fallbackLocaleDictionary.ContainsKey(kv.Key))
+                                {
+                                    if (restrict)
+                                    {
+                                        Logger.Warn($"{kv.Key}: overlap, skipped.");
+                                        continue;
+                                    }
+
+                                    Logger.Info($"{kv.Key}: overwritten.");
+                                    fallbackLocaleDictionary[kv.Key] = kv.Value;
+                                }
+                                else
+                                {
+                                    fallbackLocaleDictionary.Add(kv.Key, kv.Value);
                                 }
                             }
                         }
                         catch (Exception e)
                         {
-                            Logger.Error(e);
+                            Logger.Error(e, $"Error reading {file.FullName}: {e.Message}");
                         }
                     }
                 }
             }
 
-            if (Directory.Exists(Path.Combine(localizationsPath, localeId)))
+            var localeDir = Path.Combine(localizationsPath, localeId);
+            if (Directory.Exists(localeDir))
             {
-                var directoryInfo = new DirectoryInfo(Path.Combine(localizationsPath, localeId));
-                Logger.Info($"{nameof(localeId)} directory: {directoryInfo.FullName}");
-                var files = directoryInfo.GetFiles("*.json", SearchOption.AllDirectories);
+                Logger.Info($"Loading locale directory: {localeDir}");
+                var files = new DirectoryInfo(localeDir).GetFiles("*.json", SearchOption.AllDirectories);
                 foreach (var file in files)
                 {
-                    if (file?.Name is null || file.FullName is null)
-                    {
-                        continue;
-                    }
-
-                    Logger.Info($"Load {file.Name}");
                     try
                     {
-                        var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                            File.ReadAllText(file.FullName)) ?? [];
-                        foreach (var pair in dict)
+                        var dict =
+                            JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file.FullName))
+                            ?? new Dictionary<string, string>();
+                        foreach (var kv in dict)
                         {
-                            if (currentLocaleDictionary.ContainsKey(pair.Key))
+                            if (currentLocaleDictionary.ContainsKey(kv.Key))
                             {
                                 if (restrict)
                                 {
-                                    Logger.WarnFormat("{0}: overlap with existing key, skipped.", pair.Key);
+                                    Logger.Warn($"{kv.Key}: overlap, skipped.");
                                     continue;
                                 }
 
-                                Logger.InfoFormat("{0}: has be modified.", pair.Key);
-                                currentLocaleDictionary[pair.Key] = pair.Value;
+                                Logger.Info($"{kv.Key}: overwritten.");
+                                currentLocaleDictionary[kv.Key] = kv.Value;
                             }
                             else
                             {
-                                currentLocaleDictionary.Add(pair.Key, pair.Value);
+                                currentLocaleDictionary.Add(kv.Key, kv.Value);
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        Logger.Error(e);
+                        Logger.Error(e, $"Error reading {file.FullName}: {e.Message}");
                     }
                 }
             }
 
             return true;
         }
+
 
         private static bool LoadEmbedLocales(
             Dictionary<string, string> currentLocaleDictionary,
@@ -243,29 +351,143 @@ namespace I18NEverywhere
 
             foreach (var modInfo in CachedMods)
             {
-                if (Directory.Exists(Path.Combine(modInfo.Path)))
+                // check path is valid
+                if (!Directory.Exists(modInfo.Path))
+                    continue;
+                if (File.Exists(Path.Combine(modInfo.Path, ".nolang")))
+                    continue;
+
+                Logger.InfoFormat("Load \"{0}\"'s localization files.", modInfo.Name);
+
+                var bundlePath = Path.Combine(modInfo.Path, "Locale.lb");
+                if (File.Exists(bundlePath))
                 {
-                    if (File.Exists(Path.Combine(modInfo.Path, ".nolang")))
+                    try
                     {
+                        using var bundle = LanguageBundle.ReadBundle(bundlePath);
+                        Logger.Info($"Loaded bundle: {bundlePath} (contains {bundle.IncludedLanguage.Length} entries)");
+
+                        if (bundle.IncludedLanguage.Contains(localeId))
+                        {
+                            Logger.Info($"Load {localeId} from {bundlePath}");
+                            try
+                            {
+                                var dictFromLb = bundle.ReadContent(localeId);
+                                foreach (var pair in dictFromLb)
+                                {
+                                    if (currentLocaleDictionary.ContainsKey(pair.Key))
+                                    {
+                                        if (restrict)
+                                        {
+                                            Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                            continue;
+                                        }
+
+                                        Logger.Info($"{pair.Key}: has been modified.");
+                                        currentLocaleDictionary[pair.Key] = pair.Value;
+                                    }
+                                    else
+                                    {
+                                        currentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    }
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Logger.Error(ex, $"Error deserializing {localeId} from {bundlePath}: {ex.Message}");
+                            }
+                        }
+
+                        if (reloadFallback)
+                        {
+                            if (bundle.IncludedLanguage.Contains(fallbackLocaleId))
+                            {
+                                Logger.Info($"Load {fallbackLocaleId} from {bundlePath}");
+                                try
+                                {
+                                    var fallbackDictFromLb = bundle.ReadContent(fallbackLocaleId);
+                                    foreach (var pair in fallbackDictFromLb)
+                                    {
+                                        if (fallbackLocaleDictionary.ContainsKey(pair.Key))
+                                        {
+                                            if (restrict)
+                                            {
+                                                Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                                continue;
+                                            }
+
+                                            Logger.Info($"{pair.Key}: has been modified.");
+                                            fallbackLocaleDictionary[pair.Key] = pair.Value;
+                                        }
+                                        else
+                                        {
+                                            fallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                        }
+                                    }
+                                }
+                                catch (Exception ex)
+                                {
+                                    Logger.Error(ex,
+                                        $"Error deserializing {fallbackLocaleId} from {bundlePath}: {ex.Message}");
+                                }
+                            }
+                        }
+
+                        // just skip prev file
                         continue;
                     }
-
-                    Logger.InfoFormat("Load \"{0}\"'s localization files.", modInfo.Name);
-                    var current = Path.Combine(modInfo.Path, localeId + ".json");
-                    var fallback = Path.Combine(modInfo.Path, fallbackLocaleId + ".json");
-
-                    if (current is not null && File.Exists(current))
+                    catch (Exception bundleEx)
                     {
-                        Logger.Info($"Load {Path.GetFileName(current)}");
+                        Logger.Error(bundleEx, $"Error loading {bundlePath}: {bundleEx.Message}");
+                    }
+                }
+
+                var current = Path.Combine(modInfo.Path, localeId + ".json");
+                if (File.Exists(current))
+                {
+                    Logger.Info($"Load {Path.GetFileName(current)}");
+                    try
+                    {
+                        var currDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                            File.ReadAllText(current)) ?? new Dictionary<string, string>();
+                        foreach (var pair in currDict)
+                        {
+                            if (currentLocaleDictionary.ContainsKey(pair.Key))
+                            {
+                                if (restrict)
+                                {
+                                    Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                    continue;
+                                }
+
+                                Logger.Info($"{pair.Key} has been modified.");
+                                currentLocaleDictionary[pair.Key] = pair.Value;
+                            }
+                            else
+                            {
+                                currentLocaleDictionary.Add(pair.Key, pair.Value);
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e);
+                    }
+                }
+
+                if (reloadFallback)
+                {
+                    var fallback = Path.Combine(modInfo.Path, fallbackLocaleId + ".json");
+                    if (File.Exists(fallback))
+                    {
+                        Logger.Info($"Load {Path.GetFileName(fallback)}");
                         try
                         {
-                            var currDict =
-                                JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                    File.ReadAllText(current)) ??
-                                [];
-                            foreach (var pair in currDict)
+                            var fallbackDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                                File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
+                            foreach (var pair in fallbackDict)
                             {
-                                if (currentLocaleDictionary.ContainsKey(pair.Key))
+                                if (fallbackLocaleDictionary.ContainsKey(pair.Key))
                                 {
                                     if (restrict)
                                     {
@@ -273,12 +495,12 @@ namespace I18NEverywhere
                                         continue;
                                     }
 
-                                    Logger.Info($"{pair.Key} has be modified");
-                                    currentLocaleDictionary[pair.Key] = pair.Value;
+                                    Logger.Info($"{pair.Key}: has been modified.");
+                                    fallbackLocaleDictionary[pair.Key] = pair.Value;
                                 }
                                 else
                                 {
-                                    currentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    fallbackLocaleDictionary.Add(pair.Key, pair.Value);
                                 }
                             }
                         }
@@ -287,73 +509,35 @@ namespace I18NEverywhere
                             Logger.Error(e);
                         }
                     }
-
-                    if (reloadFallback)
-                    {
-                        if (fallback is not null && File.Exists(fallback))
-                        {
-                            Logger.Info($"Load {Path.GetFileName(fallback)}");
-                            try
-                            {
-                                var fallbackDict =
-                                    JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                        File.ReadAllText(fallback)) ?? [];
-                                foreach (var pair in fallbackDict)
-                                {
-                                    if (fallbackLocaleDictionary.ContainsKey(pair.Key))
-                                    {
-                                        if (restrict)
-                                        {
-                                            Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
-                                            continue;
-                                        }
-
-                                        Logger.Info($"{pair.Key}: has be modified.");
-                                        fallbackLocaleDictionary[pair.Key] = pair.Value;
-                                    }
-                                    else
-                                    {
-                                        fallbackLocaleDictionary.Add(pair.Key, pair.Value);
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Logger.Error(e);
-                            }
-                        }
-                    }
                 }
             }
 
             foreach (var modInfo in CachedLanguagePacks)
             {
-                if (loadLanguagePacks)
+                if (!loadLanguagePacks) break;
+                if (!modInfo.IsLanguagePack) continue;
+
+                var packDirectory = new DirectoryInfo(modInfo.Path);
+                var infoFile = Path.Combine(packDirectory.Parent.FullName, "i18n.json");
+                if (!File.Exists(infoFile))
                 {
-                    if (modInfo.IsLanguagePack)
-                    {
-                        var packDirectory = new DirectoryInfo(modInfo.Path);
-                        var infoFile = Path.Combine(packDirectory.Parent.FullName, "i18n.json");
-                        if (!File.Exists(infoFile))
-                        {
-                            Logger.WarnFormat("{0} is broken, skip load.", modInfo.Name);
-                        }
+                    Logger.WarnFormat("{0} is broken, skip load.", modInfo.Name);
+                    continue;
+                }
 
-                        try
-                        {
-                            var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
-                            Setting.LanguagePacksState +=
-                                $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
+                try
+                {
+                    var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
+                    Setting.LanguagePacksState +=
+                        $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
 
-                            Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
-                            LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId,
-                                fallbackLocaleId, reloadFallback, modInfo.Path);
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e, $"Error when load \"{packDirectory.Parent.Name}\": {e.Message}");
-                        }
-                    }
+                    Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
+                    LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId,
+                        fallbackLocaleId, reloadFallback, modInfo.Path);
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e, $"Error when load \"{packDirectory.Parent.Name}\": {e.Message}");
                 }
             }
 
@@ -363,11 +547,10 @@ namespace I18NEverywhere
         private static IEnumerable<Mod> TrickyGetActiveMods()
         {
             var manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
-            var mods = manager.GetModsInActivePlayset().GetAwaiter().GetResult();
             var context =
                 (IContext) typeof(PdxSdkPlatform).GetField("m_SDKContext",
                     BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
-            var playsetResult = context.Mods.GetActivePlayset().Result;
+            var playsetResult = context.Mods.GetActivePlaysetEnabledMods().Result;
             return !playsetResult.Success
                 ? new List<Mod>()
                 : playsetResult.Mods.Where(m => !string.IsNullOrEmpty(m.LocalData.FolderAbsolutePath));
@@ -382,7 +565,8 @@ namespace I18NEverywhere
                     if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "ModsData")))
                     {
                         var modsData =
-                            new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "ModsData")).GetDirectories();
+                            new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "ModsData")).GetDirectories("*",
+                                SearchOption.TopDirectoryOnly);
                         foreach (var info in modsData)
                         {
                             if (!info.Name.EndsWith("Localization", StringComparison.InvariantCulture))
