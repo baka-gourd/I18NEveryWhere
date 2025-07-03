@@ -56,3 +56,20 @@ Create and manage custom language packs to maintain full control over your local
 [discord]: https://discord.com/channels/1024242828114673724/1224162446537654393
 [pt]: https://mods.paradoxplaza.com/mods/92599/Windows
 [vt]: https://www.virustotal.com/gui/file/e586ed8cf1a7efdbbdfb551a9c43089bb79934f20a71f5af7e7cb6ce91de6f56
+
+## Contributors
+
+Paratransz:
+
+- zh-HANS: baka-gourd, 无手文
+- fr-FR: Edou24, Morgan Touverey Quilling, Bricetango93, Spookyof
+
+Github:
+
+- en-US: TwotoolusFLY LSh.st, baka-gourd
+- es-ES: baka-gourd, elGendo87
+- fr-FR: Dimitri, baka-gourd
+- ja-JP: baka-gourd
+- ko-KR: TwotoolusFLY LSh.st, baka-gourd
+- zh-HANS: baka-gourd, 苏寅
+- zh-HANT: baka-gourd, 歐東

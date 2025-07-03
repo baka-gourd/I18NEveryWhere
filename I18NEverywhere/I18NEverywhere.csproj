@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <LangVersion>9</LangVersion>
-    <AssemblyVersion>1.3.8.1</AssemblyVersion>
-    <FileVersion>1.3.8.1</FileVersion>
-    <Version>1.3.8.1</Version>
+    <AssemblyVersion>1.4.0.2</AssemblyVersion>
+    <FileVersion>1.4.0.2</FileVersion>
+    <Version>1.4.0.2</Version>
   </PropertyGroup>
 
   <!--<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
@@ -141,6 +141,10 @@
     <XmlPoke XmlInputPath="$(PublishConfigurationPath)"
              Value="$([System.IO.File]::ReadAllText($(ProjectDir)/ChangeLog.md))" Query="//ChangeLog" />
     <XmlPoke XmlInputPath="$(PublishConfigurationPath)" Value="$(Version)" Query="//ModVersion/@Value" />
+  </Target>
+
+  <Target Name="BuildAuthors" AfterTargets="AfterBuild">
+    <Exec Command="pnpm contributors" WorkingDirectory="$(ProjectDir)/Localization" />
   </Target>
 
   <ItemGroup>

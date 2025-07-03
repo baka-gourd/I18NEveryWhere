@@ -63,14 +63,14 @@ namespace I18NEverywhere
                 LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
             }
 
-            try
-            {
-                Util.MigrateSetting();
-            }
-            catch (Exception e)
-            {
-                Logger.Warn(e, "Cannot migrate setting.");
-            }
+            //try
+            //{
+            //    Util.MigrateSetting();
+            //}
+            //catch (Exception e)
+            //{
+            //    Logger.Warn(e, "Cannot migrate setting.");
+            //}
 
             GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
             GameManager.instance.settings.userInterface.onSettingsApplied += ChangeCurrentLocale;
