@@ -1,10 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LangVersion>9</LangVersion>
-    <AssemblyVersion>1.4.0.2</AssemblyVersion>
-    <FileVersion>1.4.0.2</FileVersion>
-    <Version>1.4.0.2</Version>
+    <BuildCounterFile>$(MSBuildProjectDirectory)\build.counter</BuildCounterFile>
+    <BaseVersion>1.4.1</BaseVersion>
   </PropertyGroup>
 
   <!--<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
@@ -13,7 +11,7 @@
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
-		<TargetFramework>net472</TargetFramework>
+    <TargetFramework>net472</TargetFramework>
     <Configurations>Debug;Release</Configurations>
 
     <!--The folder where Game.dll is located. Set it only if the game is not installed in the default location, otherwise keep it empty-->
@@ -32,13 +30,12 @@
     <EnableNETAnalyzers>True</EnableNETAnalyzers>
     <AnalysisLevel>latest-recommended</AnalysisLevel>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <!--Imports must be after PropertyGroup block-->
-  <Import
-    Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
-  <Import
-    Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
+  <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.props" />
+  <Import Project="$([System.Environment]::GetEnvironmentVariable('CSII_TOOLPATH', 'EnvironmentVariableTarget.User'))\Mod.targets" />
 
   <ItemGroup>
     <Reference Include="Colossal.AssetPipeline">
@@ -122,6 +119,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="dotnetCampus.LatestCSharpFeatures" Version="13.0.1" PrivateAssets="all" />
+    <PackageReference Include="System.ValueTuple" Version="4.5.0" ExcludeAssets="all" />
     <PackageReference Include="Lib.Harmony" Version="2.2.2" />
   </ItemGroup>
 
@@ -129,18 +128,104 @@
     <ItemGroup>
       <SomeFolder Include="Localization\project\**" Exclude="Localization\project\en-US\**" />
     </ItemGroup>
-    <Copy SourceFiles="@(SomeFolder)"
-          DestinationFiles="$(OutputPath)\Localization\%(RecursiveDir)%(Filename)%(Extension)"
-          SkipUnchangedFiles="True">
+    <Copy SourceFiles="@(SomeFolder)" DestinationFiles="$(OutputPath)\Localization\%(RecursiveDir)%(Filename)%(Extension)" SkipUnchangedFiles="True">
     </Copy>
   </Target>
 
-  <Target Name="SetupAttributes" BeforeTargets="BeforeBuild">
-    <XmlPoke XmlInputPath="$(PublishConfigurationPath)"
-             Value="$([System.IO.File]::ReadAllText($(ProjectDir)/Description.md))" Query="//LongDescription" />
-    <XmlPoke XmlInputPath="$(PublishConfigurationPath)"
-             Value="$([System.IO.File]::ReadAllText($(ProjectDir)/ChangeLog.md))" Query="//ChangeLog" />
-    <XmlPoke XmlInputPath="$(PublishConfigurationPath)" Value="$(Version)" Query="//ModVersion/@Value" />
+  <Target Name="SetupAttributes" DependsOnTargets="IncrementBuildCount" BeforeTargets="Publish">
+    <CallTarget Targets="IncrementBuildCount" />
+    <XmlPoke XmlInputPath="$(PublishConfigurationPath)" Value="$([System.IO.File]::ReadAllText($(ProjectDir)/Description.md))" Query="//LongDescription" />
+    <XmlPoke XmlInputPath="$(PublishConfigurationPath)" Value="$([System.IO.File]::ReadAllText($(ProjectDir)/ChangeLog.md))" Query="//ChangeLog" />
+    <XmlPoke XmlInputPath="$(PublishConfigurationPath)" Value="$(InformationalVersion)" Query="//ModVersion/@Value" />
+  </Target>
+
+  <Target Name="LoadBuildCount" BeforeTargets="GetAssemblyVersion;GetAssemblyAttributes" Condition="'$(Building)' != 'true'">
+    <!-- Read file -->
+    <ReadLinesFromFile File="$(BuildCounterFile)" ContinueOnError="true">
+      <Output TaskParameter="Lines" ItemName="CounterLines" />
+    </ReadLinesFromFile>
+
+    <!-- Get first line -->
+    <PropertyGroup>
+      <CounterRaw>@(CounterLines)</CounterRaw>
+      <CounterRaw Condition="'$(CounterRaw)' != ''">$(CounterRaw.Split(';')[0])</CounterRaw>
+    </PropertyGroup>
+
+    <!-- Parse -->
+    <PropertyGroup>
+      <SavedVersion></SavedVersion>
+      <SavedCount>0</SavedCount>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(CounterRaw)' != '' AND $(CounterRaw.Contains('.'))">
+      <!-- Split -->
+      <SavedCount>$(CounterRaw.Split('.')[3])</SavedCount>
+      <SavedVersion>$(CounterRaw.Split('.')[0]).$(CounterRaw.Split('.')[1]).$(CounterRaw.Split('.')[2])</SavedVersion>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BaseVersion)' != '$(SavedVersion)' OR '$(CounterRaw)' == ''">
+      <BuildCount>1</BuildCount>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(BaseVersion)' == '$(SavedVersion)' AND '$(CounterRaw)' != ''">
+      <BuildCount>$(SavedCount)</BuildCount>
+    </PropertyGroup>
+
+    <!-- Set Version -->
+    <PropertyGroup>
+      <FileVersion>$(BaseVersion).$(BuildCount)</FileVersion>
+      <InformationalVersion>$(BaseVersion)-build$(BuildCount)</InformationalVersion>
+      <Version>$(BaseVersion)</Version>
+      <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+    <!-- Send message -->
+    <Message Importance="High" Text="[LoadBuildCount] Current Version: $(FileVersion)" />
+  </Target>
+
+  <Target Name="IncrementBuildCount">
+    <ReadLinesFromFile File="$(BuildCounterFile)" ContinueOnError="true">
+      <Output TaskParameter="Lines" ItemName="CounterLines2" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <CounterRaw2>@(CounterLines2)</CounterRaw2>
+      <CounterRaw2 Condition="'$(CounterRaw2)' != ''">$(CounterRaw2.Split(';')[0])</CounterRaw2>
+    </PropertyGroup>
+    <PropertyGroup>
+      <SavedVersion2></SavedVersion2>
+      <SavedCount2>0</SavedCount2>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(CounterRaw2)' != '' AND $(CounterRaw2.Contains('.'))">
+      <SavedCount2>$(CounterRaw2.Split('.')[3])</SavedCount2>
+      <SavedVersion2>$(CounterRaw2.Split('.')[0]).$(CounterRaw2.Split('.')[1]).$(CounterRaw2.Split('.')[2])</SavedVersion2>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(BaseVersion)' != '$(SavedVersion2)' OR '$(CounterRaw2)' == ''">
+      <BuildCount>1</BuildCount>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(BaseVersion)' == '$(SavedVersion2)' AND '$(CounterRaw2)' != ''">
+      <BuildCount>$([MSBuild]::Add($([System.Convert]::ToInt32('0$(SavedCount2)')), 1))</BuildCount>
+    </PropertyGroup>
+    <ItemGroup>
+      <CounterContent Include="$(BaseVersion).$(BuildCount)" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(BuildCounterFile)" Lines="@(CounterContent)" Overwrite="true" />
+
+    <!-- Update properties for the build -->
+    <PropertyGroup>
+      <FileVersion>$(BaseVersion).$(BuildCount)</FileVersion>
+      <InformationalVersion>$(BaseVersion)-build$(BuildCount)</InformationalVersion>
+      <Version>$(BaseVersion)</Version>
+      <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    </PropertyGroup>
+
+    <!-- Send message -->
+    <Message Importance="High" Text="[IncrementBuildCount] New Version: $(FileVersion)" />
+    <Message Importance="High" Text="BaseVersion = $(BaseVersion)" />
+    <Message Importance="High" Text="BuildCount = $(BuildCount)" />
+    <Message Importance="High" Text="Version = $(Version)" />
+    <Message Importance="High" Text="FileVersion = $(FileVersion)" />
+    <Message Importance="High" Text="InformationalVersion = $(InformationalVersion)" />
   </Target>
 
   <Target Name="BuildAuthors" AfterTargets="AfterBuild">

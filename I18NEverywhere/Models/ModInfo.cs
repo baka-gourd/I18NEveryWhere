@@ -2,9 +2,9 @@ namespace I18NEverywhere.Models
 {
     public class ModInfo
     {
-        public string Name { get; set; }
-        public string Path { get; set; }
-        public bool IsLanguagePack { get; set; }
+        public string Name { get; init; }
+        public string Path { get; init; }
+        public bool IsLanguagePack { get; init; }
 
         public bool Equals(ModInfo other)
         {

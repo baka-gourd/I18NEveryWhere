@@ -75,18 +75,6 @@ Paratransz:
 
 Github:
 
----
-
-- en-US: TwotoolusFLY LSh.st, baka-gourd
-- es-ES: baka-gourd, elGendo87
-- fr-FR: Dimitri, baka-gourd
-- ja-JP: baka-gourd
-- ko-KR: TwotoolusFLY LSh.st, baka-gourd
-- zh-HANS: baka-gourd, 苏寅
-- zh-HANT: baka-gourd, 歐東
-
----
-
 - en-US: TwotoolusFLY LSh.st, baka-gourd
 - es-ES: baka-gourd, elGendo87
 - fr-FR: Dimitri, baka-gourd
@@ -103,82 +91,16 @@ Github:
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.4.0.2" />
+  <ModVersion Value="1.4.1-build5" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.3.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <!--<ChangeLog Value="" />-->
-  <ChangeLog># 1.4.0.2
+  <ChangeLog># 1.4.1
 
-## Localization
-
-- es-ES: add BridgeExpansionPack at 2025-07-03
-- es-ES: add DomeParking at 2025-07-03
-- es-ES: add TreeLinedRoadPack at 2025-07-03
-- es-ES: add VibrantFoliagePack at 2025-07-03
-- es-ES: add AirplaneParameterMod at 2025-07-03
-- es-ES: add AllAboard at 2025-07-03
-- es-ES: add AreaBucket at 2025-07-03
-- es-ES: add AssetIconLibrary at 2025-07-03
-- es-ES: add AssetPacksManager at 2025-07-03
-- es-ES: add AssetUIManager at 2025-07-03
-- es-ES: add AssetVariationChanger at 2025-07-03
-- es-ES: add AutoVehicleRenamer at 2025-07-03
-- es-ES: add BetterMoonLight at 2025-07-03
-- es-ES: add BoundaryLinesModifier at 2025-07-03
-- es-ES: add BrushSizeUnlimiter at 2025-07-03
-- es-ES: add BuildingUsageTracker at 2025-07-03
-- es-ES: add BuildingUse at 2025-07-03
-- es-ES: add ChangeCompany at 2025-07-03
-- es-ES: add CityServiceCapacityAdjuster at 2025-07-03
-- es-ES: add CompanyBrandChanger at 2025-07-03
-- es-ES: add CrowdedStation at 2025-07-03
-- es-ES: add DemandMasterControl at 2025-07-03
-- es-ES: add DepotCapacityChanger at 2025-07-03
-- es-ES: add DetailedDescriptions at 2025-07-03
-- es-ES: add DisableAccidents at 2025-07-03
-- es-ES: add EmploymentTracker at 2025-07-03
-- es-ES: add EventsController at 2025-07-03
-- es-ES: add ExtendedTooltip at 2025-07-03
-- es-ES: add HideBuildingNotification at 2025-07-03
-- es-ES: add I18NEverywhere at 2025-07-03
-- es-ES: add IBLIV at 2025-07-03
-- es-ES: add MagicalHearse at 2025-07-03
-- es-ES: add MapTextureReplacer at 2025-07-03
-- es-ES: add MoveIt at 2025-07-03
-- es-ES: add NavigationView at 2025-07-03
-- es-ES: add NoPollution at 2025-07-03
-- es-ES: add ParkingPricing at 2025-07-03
-- es-ES: add PrefabAssetFixes at 2025-07-03
-- es-ES: add PrefabUpdateMod at 2025-07-03
-- es-ES: add RealLife at 2025-07-03
-- es-ES: add RealisticParking at 2025-07-03
-- es-ES: add RealisticTrips at 2025-07-03
-- es-ES: add RealisticWorkplacesAndHouseholds at 2025-07-03
-- es-ES: add ResourceLocator at 2025-07-03
-- es-ES: add RoadWearAdjuster at 2025-07-03
-- es-ES: add SchoolCapacityBalancer at 2025-07-03
-- es-ES: add ShowMoreHappiness at 2025-07-03
-- es-ES: add SimpleModCheckerPlus at 2025-07-03
-- es-ES: add SmartTransportation at 2025-07-03
-- es-ES: add SmartUpkeepManager at 2025-07-03
-- es-ES: add StifferVehicles at 2025-07-03
-- es-ES: add SuperFastBuildingAndLeveling at 2025-07-03
-- es-ES: add ToggleableOverlays at 2025-07-03
-- es-ES: add TradingCostTweaker at 2025-07-03
-- es-ES: add TrafficJamMonitor at 2025-07-03
-- es-ES: add TransitCapacityMultiplier at 2025-07-03
-- es-ES: add TransportPolicyAdjuster at 2025-07-03
-- es-ES: add UrbanInequality at 2025-07-03
-- es-ES: add VehicleController at 2025-07-03
-- es-ES: add VehicleVariationPacks at 2025-07-03
-- es-ES: add WaterVisualTweaksMod at 2025-07-03
-- es-ES: add WhitenessToggle at 2025-07-03
-- es-ES: add ZoneColorChanger at 2025-07-03
-- es-ES: add ZoneOrganizer at 2025-07-03
-- es-ES: add EvenBetterSaveList at 2025-06-22</ChangeLog>
+- Support game 1.3.6</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
   <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/nullpinter" />

@@ -50,21 +50,11 @@ namespace I18NEverywhere
                 return false;
             }
 
-            if (I18NEverywhere.CurrentLocaleDictionary.TryGetValue(entryID, out result))
-            {
-                value = result;
-                __result = true;
-                return false;
-            }
-
-            if (I18NEverywhere.FallbackLocaleDictionary.TryGetValue(entryID, out result))
-            {
-                value = result;
-                __result = true;
-                return false;
-            }
-
-            return true;
+            if (!I18NEverywhere.CurrentLocaleDictionary.TryGetValue(entryID, out result) &&
+                !I18NEverywhere.FallbackLocaleDictionary.TryGetValue(entryID, out result)) return true;
+            value = result;
+            __result = true;
+            return false;
         }
     }
 }
