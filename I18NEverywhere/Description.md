@@ -71,5 +71,6 @@ Github:
 - fr-FR: Dimitri, baka-gourd
 - ja-JP: baka-gourd
 - ko-KR: TwotoolusFLY LSh.st, baka-gourd
+- ru-RU: baka-gourd
 - zh-HANS: baka-gourd, 苏寅
 - zh-HANT: baka-gourd, 歐東

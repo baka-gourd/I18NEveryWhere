@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <BuildCounterFile>$(MSBuildProjectDirectory)\build.counter</BuildCounterFile>
-    <BaseVersion>1.4.1</BaseVersion>
+    <BaseVersion>1.4.2</BaseVersion>
   </PropertyGroup>
 
   <!--<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
