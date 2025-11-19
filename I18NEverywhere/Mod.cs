@@ -108,9 +108,14 @@ public class I18NEverywhere : IMod
         try
         {
             Dictionary<string, string> currentLocaleDictionary = new(), fallbackLocaleDictionary = new();
+
+            LoadEmbedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
+                reloadFallback);
+
             LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
                 reloadFallback);
-            LoadEmbedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
+
+            LoadLanguagePacks(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
                 reloadFallback);
 
             CurrentLocaleDictionary = currentLocaleDictionary;
@@ -352,15 +357,17 @@ public class I18NEverywhere : IMod
         bool reloadFallback)
     {
         var restrict = Setting.Restrict;
-        var loadLanguagePacks = Setting.CanLoadLanguagePacks;
-        Setting.LanguagePacksState = string.Empty;
-        Setting.LanguagePacksState +=
-            "There are language packs (The following will likely overwrite the text above, so please note the loading order):\n---\n";
 
         foreach (var modInfo in CachedMods.Where(modInfo => Directory.Exists(modInfo.Path))
                      .Where(modInfo => !File.Exists(Path.Combine(modInfo.Path, ".nolang"))))
         {
-            Logger.InfoFormat("Load \"{0}\"'s localization files.", modInfo.Name);
+            if (modInfo.Name is null)
+            {
+                Logger.WarnFormat("Load [null]'s localization files.");
+                Logger.Warn($"Actual path: {modInfo.Path}");
+            }
+            else
+                Logger.InfoFormat("Load \"{0}\"'s localization files.", modInfo.Name);
 
             var bundlePath = Path.Combine(modInfo.Path, "Locale.lb");
             if (File.Exists(bundlePath))
@@ -515,9 +522,29 @@ public class I18NEverywhere : IMod
             }
         }
 
+        return true;
+    }
+
+    private static bool LoadLanguagePacks(
+        Dictionary<string, string> currentLocaleDictionary,
+        Dictionary<string, string> fallbackLocaleDictionary,
+        string localeId,
+        string fallbackLocaleId,
+        bool reloadFallback)
+    {
+        var restrict = Setting.Restrict;
+        var loadLanguagePacks = Setting.CanLoadLanguagePacks;
+        Setting.LanguagePacksState = string.Empty;
+        Setting.LanguagePacksState +=
+            "There are language packs (The following will likely overwrite the text above, so please note the loading order):\n---\n";
+
+        if (!loadLanguagePacks)
+        {
+            return true;
+        }
+
         foreach (var modInfo in CachedLanguagePacks)
         {
-            if (!loadLanguagePacks) break;
             if (!modInfo.IsLanguagePack) continue;
 
             var packDirectory = new DirectoryInfo(modInfo.Path);
@@ -628,7 +655,7 @@ public class I18NEverywhere : IMod
                     {
                         CachedLanguagePacks.Add(new ModInfo
                         {
-                            Name = mod.DisplayName,
+                            Name = mod.DisplayName ?? mod.Name ?? absolutePath,
                             Path = Path.Combine(absolutePath, "Localization"),
                             IsLanguagePack = true
                         });
@@ -636,7 +663,10 @@ public class I18NEverywhere : IMod
                     }
 
                     CachedMods.Add(new ModInfo
-                    { Name = mod.DisplayName, Path = Path.Combine(absolutePath, "lang") });
+                    {
+                        Name = mod.DisplayName ?? mod.Name ?? absolutePath,
+                        Path = Path.Combine(absolutePath, "lang")
+                    });
                 }
             }
             catch (Exception trickyException)
