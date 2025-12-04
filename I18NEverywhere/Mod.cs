@@ -29,7 +29,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-
+using Colossal.Core;
 using Mod = PDX.SDK.Contracts.Service.Mods.Models.Mod;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -95,10 +95,9 @@ public class I18NEverywhere : IMod
         Setting = new Setting(this);
         Setting.RegisterInOptionsUI();
         AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
-
         CacheMods();
         GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
-        Updater = GameManager.instance.RegisterUpdater(InitWhenGameAvailable);
+        Updater = MainThreadDispatcher.RegisterUpdater(InitWhenGameAvailable);
     }
 
     public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
@@ -694,7 +693,6 @@ public class I18NEverywhere : IMod
             {
                 // Skip harmony
                 if (modInfo.asset.name == "0Harmony") continue;
-                if (!modInfo.asset.isEnabled) continue;
                 var modDir = Path.GetDirectoryName(modInfo.asset.path);
                 if (string.IsNullOrEmpty(modDir))
                 {
@@ -777,7 +775,7 @@ public class I18NEverywhere : IMod
 
         if (Updater.HasValue)
         {
-            GameManager.instance.UnregisterUpdater(Updater.Value);
+            MainThreadDispatcher.UnregisterUpdater(Updater.Value);
         }
 
         GameManager.instance.localizationManager.onActiveDictionaryChanged -= ChangeCurrentLocale;

@@ -1,50 +1,17 @@
 # 1.4.2
 
+## Fix
+
+- support game 1.5.2
+
 ## Translations
 
-- ru-RU: add AchievementFixer at 2025-11-19
-- ru-RU: add AdjustSchoolCapacity at 2025-11-19
-- ru-RU: add AdjustTransitCapacity at 2025-11-19
-- ru-RU: add AdvancedRoadTools at 2025-11-19
-- ru-RU: add AllAboard at 2025-11-19
-- ru-RU: add AreaBucket at 2025-11-19
-- ru-RU: add AssetIconLibrary at 2025-11-19
-- ru-RU: add AssetPacksManager at 2025-11-19
-- ru-RU: add CustomChirps at 2025-11-19
-- ru-RU: add DetailedDescriptions at 2025-11-19
-- ru-RU: add EmploymentTracker at 2025-11-19
-- ru-RU: add EventsController.Settings at 2025-11-19
-- ru-RU: add ExtendedTooltip at 2025-11-19
-- ru-RU: add ExtraAssetsImporter at 2025-11-19
-- ru-RU: add ExtraLandscapingTools at 2025-11-19
-- ru-RU: add I18NEverywhere at 2025-11-19
-- ru-RU: add ImageOverlay at 2025-11-19
-- ru-RU: add IntersectionCollection at 2025-11-19
-- ru-RU: add MapExtPDX at 2025-11-19
-- ru-RU: add NavigationView at 2025-11-19
-- ru-RU: add NoPollution at 2025-11-19
-- ru-RU: add NoTrafficDespawn at 2025-11-19
-- ru-RU: add OutsideConnectionVehicleRemover at 2025-11-19
-- ru-RU: add PlopTheGrowables at 2025-11-19
-- ru-RU: add RealLife at 2025-11-19
-- ru-RU: add RealisticJobSearch at 2025-11-19
-- ru-RU: add RealisticParking at 2025-11-19
-- ru-RU: add RealisticPathFinding at 2025-11-19
-- ru-RU: add RealisticTrips at 2025-11-19
-- ru-RU: add RealisticWorkplacesAndHouseholds at 2025-11-19
-- ru-RU: add RoadBuilder at 2025-11-19
-- ru-RU: add RoadNameRemover at 2025-11-19
-- ru-RU: add SunGlasses at 2025-11-19
-- ru-RU: add TimeWeatherAnarchy at 2025-11-19
-- ru-RU: add ToggleableOverlays at 2025-11-19
-- ru-RU: add TransportPolicyAdjuster at 2025-11-19
-- ru-RU: add VehicleController at 2025-11-19
-- ru-RU: add WrireEveryWhere at 2025-11-19
-- es-ES: upd AssetVariationChanger at 2025-11-19
-- fr-FR: upd CitizenModelManager at 2025-11-19        
-- fr-FR: upd DemandMasterPro at 2025-11-19
-- fr-FR: upd OSMExport at 2025-11-19
-- fr-FR: upd PedestrianBridges at 2025-11-19
-- fr-FR: upd RealisticParking at 2025-11-19
-- fr-FR: upd TimeandWeatherAnarchy at 2025-11-19      
-- ko-KR: upd Vanilla at 2025-11-18
+- fr-FR: upd CitizenModelManager at 2025-11-27
+- fr-FR: upd DemandMasterPro at 2025-11-27
+- fr-FR: upd EvenBetterSaveList at 2025-11-27
+- fr-FR: upd OSMExport at 2025-11-27
+- fr-FR: upd ParkingMonitor at 2025-11-27
+- fr-FR: upd PedestrianBridges at 2025-11-27
+- fr-FR: upd RealisticPathFinding at 2025-11-27
+- fr-FR: upd RealisticWorkplacesAndHouseholds at 2025-11-27
+- fr-FR: upd TimeandWeatherAnarchy at 2025-11-27
