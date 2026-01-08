@@ -1,3 +1,4 @@
+using Colossal.Core;
 using Colossal.IO.AssetDatabase;
 using Colossal.Localization;
 using Colossal.Logging;
@@ -29,7 +30,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Colossal.Core;
+
 using Mod = PDX.SDK.Contracts.Service.Mods.Models.Mod;
 
 // ReSharper disable NonReadonlyMemberInGetHashCode
@@ -122,6 +123,8 @@ public class I18NEverywhere : IMod
             {
                 FallbackLocaleDictionary = fallbackLocaleDictionary;
             }
+
+            ValidateEntries();
         }
         catch (Exception e)
         {
@@ -168,6 +171,11 @@ public class I18NEverywhere : IMod
                             var dict = bundle.ReadContent(localeId);
                             foreach (var kv in dict)
                             {
+                                if (kv.Key is null || kv.Value is null)
+                                {
+                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                    continue;
+                                }
                                 if (currentLocaleDictionary.ContainsKey(kv.Key))
                                 {
                                     if (restrict)
@@ -201,6 +209,11 @@ public class I18NEverywhere : IMod
                             var dict = bundle.ReadContent(localeId);
                             foreach (var kv in dict)
                             {
+                                if (kv.Key is null || kv.Value is null)
+                                {
+                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                    continue;
+                                }
                                 if (currentLocaleDictionary.ContainsKey(kv.Key))
                                 {
                                     if (restrict)
@@ -234,6 +247,11 @@ public class I18NEverywhere : IMod
                         var fallbackDict = bundle.ReadContent(fallbackLocaleId);
                         foreach (var kv in fallbackDict)
                         {
+                            if (kv.Key is null || kv.Value is null)
+                            {
+                                Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                continue;
+                            }
                             if (fallbackLocaleDictionary.ContainsKey(kv.Key))
                             {
                                 if (restrict)
@@ -281,6 +299,11 @@ public class I18NEverywhere : IMod
                                    ?? new Dictionary<string, string>();
                         foreach (var kv in dict)
                         {
+                            if (kv.Key is null || kv.Value is null)
+                            {
+                                Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                continue;
+                            }
                             if (fallbackLocaleDictionary.ContainsKey(kv.Key))
                             {
                                 if (restrict)
@@ -320,6 +343,11 @@ public class I18NEverywhere : IMod
                         ?? new Dictionary<string, string>();
                     foreach (var kv in dict)
                     {
+                        if (kv.Key is null || kv.Value is null)
+                        {
+                            Logger.WarnFormat("{0} have a null entry", bundlePath);
+                            continue;
+                        }
                         if (currentLocaleDictionary.ContainsKey(kv.Key))
                         {
                             if (restrict)
@@ -382,22 +410,27 @@ public class I18NEverywhere : IMod
                         try
                         {
                             var dictFromLb = bundle.ReadContent(localeId);
-                            foreach (var pair in dictFromLb)
+                            foreach (var kv in dictFromLb)
                             {
-                                if (currentLocaleDictionary.ContainsKey(pair.Key))
+                                if (kv.Key is null || kv.Value is null)
+                                {
+                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                    continue;
+                                }
+                                if (currentLocaleDictionary.ContainsKey(kv.Key))
                                 {
                                     if (restrict)
                                     {
-                                        Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                        Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
                                         continue;
                                     }
 
-                                    Logger.Info($"{pair.Key}: has been modified.");
-                                    currentLocaleDictionary[pair.Key] = pair.Value;
+                                    Logger.Info($"{kv.Key}: has been modified.");
+                                    currentLocaleDictionary[kv.Key] = kv.Value;
                                 }
                                 else
                                 {
-                                    currentLocaleDictionary.Add(pair.Key, pair.Value);
+                                    currentLocaleDictionary.Add(kv.Key, kv.Value);
                                 }
                             }
                         }
@@ -415,22 +448,27 @@ public class I18NEverywhere : IMod
                             try
                             {
                                 var fallbackDictFromLb = bundle.ReadContent(fallbackLocaleId);
-                                foreach (var pair in fallbackDictFromLb)
+                                foreach (var kv in fallbackDictFromLb)
                                 {
-                                    if (fallbackLocaleDictionary.ContainsKey(pair.Key))
+                                    if (kv.Key is null || kv.Value is null)
+                                    {
+                                        Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                        continue;
+                                    }
+                                    if (fallbackLocaleDictionary.ContainsKey(kv.Key))
                                     {
                                         if (restrict)
                                         {
-                                            Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                            Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
                                             continue;
                                         }
 
-                                        Logger.Info($"{pair.Key}: has been modified.");
-                                        fallbackLocaleDictionary[pair.Key] = pair.Value;
+                                        Logger.Info($"{kv.Key}: has been modified.");
+                                        fallbackLocaleDictionary[kv.Key] = kv.Value;
                                     }
                                     else
                                     {
-                                        fallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                        fallbackLocaleDictionary.Add(kv.Key, kv.Value);
                                     }
                                 }
                             }
@@ -459,22 +497,27 @@ public class I18NEverywhere : IMod
                 {
                     var currDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
                         File.ReadAllText(current)) ?? new Dictionary<string, string>();
-                    foreach (var pair in currDict)
+                    foreach (var kv in currDict)
                     {
-                        if (currentLocaleDictionary.ContainsKey(pair.Key))
+                        if (kv.Key is null || kv.Value is null)
+                        {
+                            Logger.WarnFormat("{0} have a null entry", bundlePath);
+                            continue;
+                        }
+                        if (currentLocaleDictionary.ContainsKey(kv.Key))
                         {
                             if (restrict)
                             {
-                                Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
                                 continue;
                             }
 
-                            Logger.Info($"{pair.Key} has been modified.");
-                            currentLocaleDictionary[pair.Key] = pair.Value;
+                            Logger.Info($"{kv.Key} has been modified.");
+                            currentLocaleDictionary[kv.Key] = kv.Value;
                         }
                         else
                         {
-                            currentLocaleDictionary.Add(pair.Key, pair.Value);
+                            currentLocaleDictionary.Add(kv.Key, kv.Value);
                         }
                     }
                 }
@@ -494,22 +537,27 @@ public class I18NEverywhere : IMod
                     {
                         var fallbackDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
                             File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
-                        foreach (var pair in fallbackDict)
+                        foreach (var kv in fallbackDict)
                         {
-                            if (fallbackLocaleDictionary.ContainsKey(pair.Key))
+                            if (kv.Key is null || kv.Value is null)
+                            {
+                                Logger.WarnFormat("{0} have a null entry", bundlePath);
+                                continue;
+                            }
+                            if (fallbackLocaleDictionary.ContainsKey(kv.Key))
                             {
                                 if (restrict)
                                 {
-                                    Logger.Warn($"{pair.Key}: overlap with existing key, skipped.");
+                                    Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
                                     continue;
                                 }
 
-                                Logger.Info($"{pair.Key}: has been modified.");
-                                fallbackLocaleDictionary[pair.Key] = pair.Value;
+                                Logger.Info($"{kv.Key}: has been modified.");
+                                fallbackLocaleDictionary[kv.Key] = kv.Value;
                             }
                             else
                             {
-                                fallbackLocaleDictionary.Add(pair.Key, pair.Value);
+                                fallbackLocaleDictionary.Add(kv.Key, kv.Value);
                             }
                         }
                     }
@@ -585,6 +633,27 @@ public class I18NEverywhere : IMod
             : playsetResult.Mods.Where(m => !string.IsNullOrEmpty(m.LocalData.FolderAbsolutePath));
     }
 
+    private static void ValidateEntries()
+    {
+        var keys = CurrentLocaleDictionary
+            .Where(kv => kv.Key == null || kv.Value == null)
+            .Select(kv => kv.Key)
+            .ToList();
+        foreach (var key in keys)
+        {
+            CurrentLocaleDictionary.Remove(key);
+        }
+
+        var keysAgain = CurrentLocaleDictionary
+            .Where(kv => kv.Key == null || kv.Value == null)
+            .Select(kv => kv.Key)
+            .ToList();
+        foreach (var key in keysAgain)
+        {
+            CurrentLocaleDictionary.Remove(key);
+        }
+    }
+
     private static void CacheMods()
     {
         if (Setting.UseNewModDetectMethod)
@@ -623,6 +692,11 @@ public class I18NEverywhere : IMod
 
                     foreach (var localMod in localMods)
                     {
+                        if (localMod.Name.StartsWith('.') || localMod.Name.StartsWith('~'))
+                        {
+                            continue;
+                        }
+
                         if (File.Exists(Path.Combine(localMod.FullName, "i18n.json")))
                         {
                             CachedLanguagePacks.Add(new ModInfo
