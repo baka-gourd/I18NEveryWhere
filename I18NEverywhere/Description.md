@@ -73,4 +73,4 @@ Github:
 - ko-KR: TwotoolusFLY LSh.st, baka-gourd
 - ru-RU: baka-gourd
 - zh-HANS: baka-gourd, 苏寅
-- zh-HANT: baka-gourd, 歐東
+- zh-HANT: baka-gourd, v3921358, 歐東

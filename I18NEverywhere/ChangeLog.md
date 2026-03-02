@@ -1,5 +1,5 @@
-# 1.4.5
+# 1.4.7
 
-## Fix
+## Fixes
 
-- ignore local mods start with `.` and `~`
+- Try fix null check again, but I really have no idea what caused this. I've already fixed it once.
