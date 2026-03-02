@@ -64,6 +64,7 @@ public class I18NEverywhere : IMod
     public void OnLoad(UpdateSystem updateSystem)
     {
         Instance = this;
+        Logger.keepStreamOpen = true;
         Logger.Info(nameof(OnLoad));
 
         if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
