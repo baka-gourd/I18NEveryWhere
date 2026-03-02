@@ -83,7 +83,7 @@ public class Setting(IMod mod) : ModSetting(mod)
             })
             .Select(kv => kv.Key)
             .Select(key => new DropdownItem<string>
-                {value = key, displayName = key}));
+            { value = key, displayName = key }));
 
         return list.ToArray();
     }
@@ -123,20 +123,27 @@ public class Setting(IMod mod) : ModSetting(mod)
                 case "None":
                     return;
                 case "All":
-                {
-                    foreach (var pairD in I18NEverywhere.ModsFallbackDictionary)
                     {
-                        if (!(pairD.Value is IDictionarySource isss)) continue;
-                        var dict = isss
-                            .ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
-                            .ToDictionary(pair => pair.Key, pair => pair.Value);
-                        var str = JsonConvert.SerializeObject(dict, Formatting.Indented);
-                        File.WriteAllText(
-                            Path.Combine(dir.FullName, Util.SanitizeFileName(pairD.Key + ".json")), str);
-                    }
+                        foreach (var pairD in I18NEverywhere.ModsFallbackDictionary)
+                        {
+                            if (pairD.Value is not IDictionarySource isss) continue;
+                            switch (LocaleType)
+                            {
+                                case "LocaleAsset" when pairD.Value is not LocaleAsset:
+                                case "Mod" when pairD.Value is LocaleAsset:
+                                    continue;
+                            }
 
-                    return;
-                }
+                            var dict = isss
+                                .ReadEntries(new List<IDictionaryEntryError>(), new Dictionary<string, int>())
+                                .ToDictionary(pair => pair.Key, pair => pair.Value);
+                            var str = JsonConvert.SerializeObject(dict, Formatting.Indented);
+                            File.WriteAllText(
+                                Path.Combine(dir.FullName, Util.SanitizeFileName(pairD.Key + ".json")), str);
+                        }
+
+                        return;
+                    }
             }
 
             var obj = I18NEverywhere.ModsFallbackDictionary[SelectedModDropDown];
