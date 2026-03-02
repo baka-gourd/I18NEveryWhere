@@ -385,16 +385,21 @@ public class I18NEverywhere : IMod
     {
         var restrict = Setting.Restrict;
 
-        foreach (var modInfo in CachedMods.Where(modInfo => Directory.Exists(modInfo.Path))
-                     .Where(modInfo => !File.Exists(Path.Combine(modInfo.Path, ".nolang"))))
+        foreach (var modInfo in CachedMods
+                     .Where(mi => mi != null)
+                     .Where(mi => !string.IsNullOrEmpty(mi.Path))
+                     .Where(mi => Directory.Exists(mi.Path))
+                     .Where(mi => !File.Exists(Path.Combine(mi.Path, ".nolang"))))
         {
-            if (modInfo.Name is null)
+            if (modInfo?.Name is null)
             {
-                Logger.WarnFormat("Load [null]'s localization files.");
-                Logger.Warn($"Actual path: {modInfo.Path}");
+                Logger.Warn("Load [null]'s localization files.");
+                Logger.Warn($"Actual path: {modInfo?.Path}");
             }
             else
-                Logger.InfoFormat("Load \"{0}\"'s localization files.", modInfo.Name);
+            {
+                Logger.Info($"Load \"{modInfo.Name}\"'s localization files.");
+            }
 
             var bundlePath = Path.Combine(modInfo.Path, "Locale.lb");
             if (File.Exists(bundlePath))
