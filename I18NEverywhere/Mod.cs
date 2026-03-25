@@ -30,10 +30,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-
+using PDX.SDK.Contracts.Service.Mods.Result;
 using Mod = PDX.SDK.Contracts.Service.Mods.Models.Mod;
-
-// ReSharper disable NonReadonlyMemberInGetHashCode
 
 namespace I18NEverywhere;
 
@@ -44,51 +42,46 @@ public class I18NEverywhere : IMod
         .GetLogger($"{nameof(I18NEverywhere)}.{nameof(I18NEverywhere)}").SetShowsErrorsInUI(true);
 
     public static Dictionary<string, string> CurrentLocaleDictionary { get; set; } = new();
-
     public static Dictionary<string, string> FallbackLocaleDictionary { get; set; } = new();
-
     public static Dictionary<string, object> ModsFallbackDictionary { get; } = new();
-
     private static List<ModInfo> CachedMods { get; set; } = [];
     private static List<ModInfo> CachedLanguagePacks { get; set; } = [];
-
     [CanBeNull] private static string LocalizationsPath { get; set; }
+
     private Guid? Updater { get; set; }
     public bool GameLoaded { get; set; }
     public event EventHandler OnLocaleLoaded;
 
     public static Setting Setting { get; private set; }
     public static I18NEverywhere Instance { get; private set; }
+
     private static int _settingVersion;
 
+    /// <summary>
+    /// Actual locale loading is deferred to <see cref="InitWhenGameAvailable"/>.
+    /// </summary>
     public void OnLoad(UpdateSystem updateSystem)
     {
         Instance = this;
         Logger.keepStreamOpen = true;
         Logger.Info(nameof(OnLoad));
 
-        if (GameManager.instance.modManager.TryGetExecutableAsset(this, out var asset))
+        if (GameManager.instance.modManager.TryGetExecutableAsset(this, out ExecutableAsset asset))
         {
             Logger.Info($"Current mod asset at {asset.path}");
             LocalizationsPath = Path.Combine(Path.GetDirectoryName(asset.path) ?? "", "Localization");
         }
 
-        //try
-        //{
-        //    Util.MigrateSetting();
-        //}
-        //catch (Exception e)
-        //{
-        //    Logger.Warn(e, "Cannot migrate setting.");
-        //}
-
         GameManager.instance.localizationManager.onActiveDictionaryChanged += ChangeCurrentLocale;
         GameManager.instance.settings.userInterface.onSettingsApplied += ChangeCurrentLocale;
+
+        // Patch LocalizationDictionary.TryGetValue to intercept every key lookup
+        // and redirect to our dictionaries before falling through to the game's own data.
         Logger.Info("Apply harmony patching...");
-        var harmony = new Harmony("Nptr.I18nEverywhere");
-        var originalMethod =
+        Harmony harmony = new("Nptr.I18nEverywhere");
+        MethodInfo originalMethod =
             typeof(LocalizationDictionary).GetMethod("TryGetValue", BindingFlags.Public | BindingFlags.Instance);
-        var prefix =
+        MethodInfo prefix =
             typeof(HookLocalizationDictionary).GetMethod("Prefix", BindingFlags.Public | BindingFlags.Static);
 
         harmony.Patch(originalMethod, new HarmonyMethod(prefix));
@@ -99,9 +92,19 @@ public class I18NEverywhere : IMod
         AssetDatabase.global.LoadSettings("I18NEverywhere", Setting, new Setting(this));
         CacheMods();
         GameManager.instance.localizationManager.AddSource("en-US", new LocaleEN(Setting));
+
+        // Defer full initialization: poll each frame until the game reaches MainMenu.
         Updater = MainThreadDispatcher.RegisterUpdater(InitWhenGameAvailable);
     }
 
+    /// <summary>
+    /// Main locale loading pipeline. Builds new dictionaries in three phases:
+    /// 1) Embed locales  - per-mod lang/ folders (lowest priority)
+    /// 2) Centralized    - this mod's own Localization/ bundle or directory
+    /// 3) Language packs - dedicated translation mods (highest priority, can overwrite all above)
+    /// Dictionaries are swapped atomically after all phases complete.
+    /// </summary>
+    /// <param name="reloadFallback">False on locale-switch events (fallback rarely changes).</param>
     public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
     {
         Logger.Info("Loading locales...");
@@ -119,6 +122,7 @@ public class I18NEverywhere : IMod
             LoadLanguagePacks(currentLocaleDictionary, fallbackLocaleDictionary, localeId, fallbackLocaleId,
                 reloadFallback);
 
+            // Atomic swap: replace both dictionaries at once.
             CurrentLocaleDictionary = currentLocaleDictionary;
             if (reloadFallback)
             {
@@ -136,6 +140,137 @@ public class I18NEverywhere : IMod
         return true;
     }
 
+    #region Locale Loading Helpers
+
+    /// <summary>
+    /// Merges entries from <paramref name="source"/> into <paramref name="target"/>.
+    /// When restrict=true, existing keys are never overwritten (mod authors can protect their translations).
+    /// When restrict=false, later sources win (allows language packs to override earlier entries).
+    /// </summary>
+    private static void MergeDictionary(
+        Dictionary<string, string> target,
+        Dictionary<string, string> source,
+        bool restrict,
+        string sourceName)
+    {
+        foreach (KeyValuePair<string, string> kv in source)
+        {
+            if (kv.Key is null || kv.Value is null)
+            {
+                Logger.WarnFormat("{0} have a null entry", sourceName);
+                continue;
+            }
+
+            if (target.ContainsKey(kv.Key))
+            {
+                if (restrict)
+                {
+                    Logger.Warn($"{kv.Key}: overlap, skipped.");
+                    continue;
+                }
+
+                Logger.Info($"{kv.Key}: overwritten.");
+                target[kv.Key] = kv.Value;
+            }
+            else
+            {
+                target.Add(kv.Key, kv.Value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads entries for the given locale from a <see cref="LanguageBundle"/> and merges them into the target dictionary.
+    /// </summary>
+    private static void ReadAndMergeBundleLocale(
+        LanguageBundle bundle,
+        Dictionary<string, string> target,
+        string localeId,
+        bool restrict,
+        string bundlePath)
+    {
+        Logger.Info($"Load {localeId} from {bundlePath}");
+        try
+        {
+            Dictionary<string, string> dict = bundle.ReadContent(localeId);
+            MergeDictionary(target, dict, restrict, bundlePath);
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex, $"Error reading {localeId} from {bundlePath}: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Loads all JSON files under <c>{basePath}/{localeId}/</c> and merges them into the target dictionary.
+    /// </summary>
+    private static void LoadLocaleFromDirectory(
+        string basePath,
+        Dictionary<string, string> target,
+        string localeId,
+        bool restrict)
+    {
+        string localeDir = Path.Combine(basePath, localeId);
+        if (!Directory.Exists(localeDir))
+        {
+            return;
+        }
+
+        Logger.Info($"Loading locale directory: {localeDir}");
+        FileInfo[] files = new DirectoryInfo(localeDir).GetFiles("*.json", SearchOption.AllDirectories);
+        foreach (FileInfo file in files)
+        {
+            try
+            {
+                Dictionary<string, string> dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                                                      File.ReadAllText(file.FullName))
+                                                  ?? new Dictionary<string, string>();
+                MergeDictionary(target, dict, restrict, file.FullName);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e, $"Error reading {file.FullName}: {e.Message}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Reads a single JSON file from <c>{modPath}/{localeId}.json</c> and merges it into the target dictionary.
+    /// </summary>
+    private static void LoadEmbedLocaleFromJson(
+        Dictionary<string, string> target,
+        string modPath,
+        string localeId,
+        bool restrict)
+    {
+        string filePath = Path.Combine(modPath, localeId + ".json");
+        if (!File.Exists(filePath))
+        {
+            return;
+        }
+
+        Logger.Info($"Load {Path.GetFileName(filePath)}");
+        try
+        {
+            Dictionary<string, string> dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+                File.ReadAllText(filePath)) ?? new Dictionary<string, string>();
+            MergeDictionary(target, dict, restrict, filePath);
+        }
+        catch (Exception e)
+        {
+            Logger.Error(e);
+        }
+    }
+
+    #endregion
+
+    #region Locale Loading Methods
+
+    /// <summary>
+    /// Phase 2: Load from this mod's own Localization/ directory (or a language pack's).
+    /// Strategy: prefer Locale.lb bundle if present; otherwise fall back to per-locale JSON directories.
+    /// Also reused by <see cref="LoadLanguagePacks"/> with a different <paramref name="localizationsPath"/>.
+    /// </summary>
     private static bool LoadCentralizedLocales(
         Dictionary<string, string> currentLocaleDictionary,
         Dictionary<string, string> fallbackLocaleDictionary,
@@ -145,7 +280,7 @@ public class I18NEverywhere : IMod
         string localizationsPath = null)
     {
         localizationsPath ??= LocalizationsPath;
-        var restrict = Setting.Restrict;
+        bool restrict = Setting.Restrict;
 
         if (string.IsNullOrEmpty(localizationsPath))
         {
@@ -153,127 +288,25 @@ public class I18NEverywhere : IMod
             return false;
         }
 
-        var bundlePath = Path.Combine(localizationsPath, "Locale.lb");
+        // Try bundle first: a single .lb archive containing all languages.
+        string bundlePath = Path.Combine(localizationsPath, "Locale.lb");
         if (File.Exists(bundlePath))
         {
             try
             {
-                using var bundle = LanguageBundle.ReadBundle(bundlePath);
+                using LanguageBundle bundle = LanguageBundle.ReadBundle(bundlePath);
                 Logger.Info($"Loaded bundle: {bundlePath} (IsCentralized={bundle.IsCentralized})");
 
-                if (!bundle.IsCentralized)
+                // Case-insensitive match: centralized bundles may use different casing than the game.
+                if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
-                    {
-                        var entryName = $"{localeId}.json";
-                        Logger.Info($"Load {entryName} from {bundlePath}");
-                        try
-                        {
-                            var dict = bundle.ReadContent(localeId);
-                            foreach (var kv in dict)
-                            {
-                                if (kv.Key is null || kv.Value is null)
-                                {
-                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                    continue;
-                                }
-                                if (currentLocaleDictionary.ContainsKey(kv.Key))
-                                {
-                                    if (restrict)
-                                    {
-                                        Logger.Warn($"{kv.Key}: overlap, skipped.");
-                                        continue;
-                                    }
-
-                                    Logger.Info($"{kv.Key}: overwritten.");
-                                    currentLocaleDictionary[kv.Key] = kv.Value;
-                                }
-                                else
-                                {
-                                    currentLocaleDictionary.Add(kv.Key, kv.Value);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, $"Error reading {entryName}: {ex.Message}");
-                        }
-                    }
-                }
-                else
-                {
-                    if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
-                    {
-                        Logger.Info($"Load all JSON under directory \"{localeId}/\" from {bundlePath}");
-                        try
-                        {
-                            var dict = bundle.ReadContent(localeId);
-                            foreach (var kv in dict)
-                            {
-                                if (kv.Key is null || kv.Value is null)
-                                {
-                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                    continue;
-                                }
-                                if (currentLocaleDictionary.ContainsKey(kv.Key))
-                                {
-                                    if (restrict)
-                                    {
-                                        Logger.Warn($"{kv.Key}: overlap, skipped.");
-                                        continue;
-                                    }
-
-                                    Logger.Info($"{kv.Key}: overwritten.");
-                                    currentLocaleDictionary[kv.Key] = kv.Value;
-                                }
-                                else
-                                {
-                                    currentLocaleDictionary.Add(kv.Key, kv.Value);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, $"Error reading {localeId} directory: {ex.Message}");
-                        }
-                    }
+                    ReadAndMergeBundleLocale(bundle, currentLocaleDictionary, localeId, restrict, bundlePath);
                 }
 
                 if (reloadFallback &&
                     bundle.IncludedLanguage.Contains(fallbackLocaleId, StringComparer.InvariantCultureIgnoreCase))
                 {
-                    Logger.Info($"Load all JSON under directory \"{fallbackLocaleId}/\" from {bundlePath}");
-                    try
-                    {
-                        var fallbackDict = bundle.ReadContent(fallbackLocaleId);
-                        foreach (var kv in fallbackDict)
-                        {
-                            if (kv.Key is null || kv.Value is null)
-                            {
-                                Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                continue;
-                            }
-                            if (fallbackLocaleDictionary.ContainsKey(kv.Key))
-                            {
-                                if (restrict)
-                                {
-                                    Logger.Warn($"{kv.Key}: overlap, skipped.");
-                                    continue;
-                                }
-
-                                Logger.Info($"{kv.Key}: overwritten.");
-                                fallbackLocaleDictionary[kv.Key] = kv.Value;
-                            }
-                            else
-                            {
-                                fallbackLocaleDictionary.Add(kv.Key, kv.Value);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error(ex, $"Error reading fallback {fallbackLocaleId} directory: {ex.Message}");
-                    }
+                    ReadAndMergeBundleLocale(bundle, fallbackLocaleDictionary, fallbackLocaleId, restrict, bundlePath);
                 }
 
                 return true;
@@ -284,99 +317,23 @@ public class I18NEverywhere : IMod
             }
         }
 
+        // Fallback: load loose JSON files from {localizationsPath}/{localeId}/*.json.
         if (reloadFallback)
         {
-            var fallbackDir = Path.Combine(localizationsPath, fallbackLocaleId);
-            if (Directory.Exists(fallbackDir))
-            {
-                Logger.Info($"Loading fallback directory: {fallbackDir}");
-                var files = new DirectoryInfo(fallbackDir).GetFiles("*.json", SearchOption.AllDirectories);
-                foreach (var file in files)
-                {
-                    try
-                    {
-                        var dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                                       File.ReadAllText(file.FullName))
-                                   ?? new Dictionary<string, string>();
-                        foreach (var kv in dict)
-                        {
-                            if (kv.Key is null || kv.Value is null)
-                            {
-                                Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                continue;
-                            }
-                            if (fallbackLocaleDictionary.ContainsKey(kv.Key))
-                            {
-                                if (restrict)
-                                {
-                                    Logger.Warn($"{kv.Key}: overlap, skipped.");
-                                    continue;
-                                }
-
-                                Logger.Info($"{kv.Key}: overwritten.");
-                                fallbackLocaleDictionary[kv.Key] = kv.Value;
-                            }
-                            else
-                            {
-                                fallbackLocaleDictionary.Add(kv.Key, kv.Value);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e, $"Error reading {file.FullName}: {e.Message}");
-                    }
-                }
-            }
+            LoadLocaleFromDirectory(localizationsPath, fallbackLocaleDictionary, fallbackLocaleId, restrict);
         }
 
-        var localeDir = Path.Combine(localizationsPath, localeId);
-        if (Directory.Exists(localeDir))
-        {
-            Logger.Info($"Loading locale directory: {localeDir}");
-            var files = new DirectoryInfo(localeDir).GetFiles("*.json", SearchOption.AllDirectories);
-            foreach (var file in files)
-            {
-                try
-                {
-                    var dict =
-                        JsonConvert.DeserializeObject<Dictionary<string, string>>(File.ReadAllText(file.FullName))
-                        ?? new Dictionary<string, string>();
-                    foreach (var kv in dict)
-                    {
-                        if (kv.Key is null || kv.Value is null)
-                        {
-                            Logger.WarnFormat("{0} have a null entry", bundlePath);
-                            continue;
-                        }
-                        if (currentLocaleDictionary.ContainsKey(kv.Key))
-                        {
-                            if (restrict)
-                            {
-                                Logger.Warn($"{kv.Key}: overlap, skipped.");
-                                continue;
-                            }
-
-                            Logger.Info($"{kv.Key}: overwritten.");
-                            currentLocaleDictionary[kv.Key] = kv.Value;
-                        }
-                        else
-                        {
-                            currentLocaleDictionary.Add(kv.Key, kv.Value);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e, $"Error reading {file.FullName}: {e.Message}");
-                }
-            }
-        }
+        LoadLocaleFromDirectory(localizationsPath, currentLocaleDictionary, localeId, restrict);
 
         return true;
     }
 
-
+    /// <summary>
+    /// Phase 1: Scan each cached mod's lang/ folder for locale files.
+    /// Per mod: prefer Locale.lb bundle; fall back to {localeId}.json flat file.
+    /// Mods with a ".nolang" sentinel file are skipped (opt-out mechanism).
+    /// Note: bundle language check here is case-sensitive (unlike centralized loading).
+    /// </summary>
     private static bool LoadEmbedLocales(
         Dictionary<string, string> currentLocaleDictionary,
         Dictionary<string, string> fallbackLocaleDictionary,
@@ -384,9 +341,10 @@ public class I18NEverywhere : IMod
         string fallbackLocaleId,
         bool reloadFallback)
     {
-        var restrict = Setting.Restrict;
+        bool restrict = Setting.Restrict;
 
-        foreach (var modInfo in CachedMods
+        // Filter: skip null/missing/opted-out mods.
+        foreach (ModInfo modInfo in CachedMods
                      .Where(mi => mi != null)
                      .Where(mi => !string.IsNullOrEmpty(mi.Path))
                      .Where(mi => Directory.Exists(mi.Path))
@@ -402,91 +360,27 @@ public class I18NEverywhere : IMod
                 Logger.Info($"Load \"{modInfo.Name}\"'s localization files.");
             }
 
-            var bundlePath = Path.Combine(modInfo.Path, "Locale.lb");
+            // If this mod ships a bundle, use it exclusively and skip JSON fallback.
+            string bundlePath = Path.Combine(modInfo.Path, "Locale.lb");
             if (File.Exists(bundlePath))
             {
                 try
                 {
-                    using var bundle = LanguageBundle.ReadBundle(bundlePath);
+                    using LanguageBundle bundle = LanguageBundle.ReadBundle(bundlePath);
                     Logger.Info($"Loaded bundle: {bundlePath} (contains {bundle.IncludedLanguage.Length} entries)");
 
                     if (bundle.IncludedLanguage.Contains(localeId))
                     {
-                        Logger.Info($"Load {localeId} from {bundlePath}");
-                        try
-                        {
-                            var dictFromLb = bundle.ReadContent(localeId);
-                            foreach (var kv in dictFromLb)
-                            {
-                                if (kv.Key is null || kv.Value is null)
-                                {
-                                    Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                    continue;
-                                }
-                                if (currentLocaleDictionary.ContainsKey(kv.Key))
-                                {
-                                    if (restrict)
-                                    {
-                                        Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
-                                        continue;
-                                    }
-
-                                    Logger.Info($"{kv.Key}: has been modified.");
-                                    currentLocaleDictionary[kv.Key] = kv.Value;
-                                }
-                                else
-                                {
-                                    currentLocaleDictionary.Add(kv.Key, kv.Value);
-                                }
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            Logger.Error(ex, $"Error deserializing {localeId} from {bundlePath}: {ex.Message}");
-                        }
+                        ReadAndMergeBundleLocale(bundle, currentLocaleDictionary, localeId, restrict, bundlePath);
                     }
 
-                    if (reloadFallback)
+                    if (reloadFallback && bundle.IncludedLanguage.Contains(fallbackLocaleId))
                     {
-                        if (bundle.IncludedLanguage.Contains(fallbackLocaleId))
-                        {
-                            Logger.Info($"Load {fallbackLocaleId} from {bundlePath}");
-                            try
-                            {
-                                var fallbackDictFromLb = bundle.ReadContent(fallbackLocaleId);
-                                foreach (var kv in fallbackDictFromLb)
-                                {
-                                    if (kv.Key is null || kv.Value is null)
-                                    {
-                                        Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                        continue;
-                                    }
-                                    if (fallbackLocaleDictionary.ContainsKey(kv.Key))
-                                    {
-                                        if (restrict)
-                                        {
-                                            Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
-                                            continue;
-                                        }
-
-                                        Logger.Info($"{kv.Key}: has been modified.");
-                                        fallbackLocaleDictionary[kv.Key] = kv.Value;
-                                    }
-                                    else
-                                    {
-                                        fallbackLocaleDictionary.Add(kv.Key, kv.Value);
-                                    }
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                Logger.Error(ex,
-                                    $"Error deserializing {fallbackLocaleId} from {bundlePath}: {ex.Message}");
-                            }
-                        }
+                        ReadAndMergeBundleLocale(bundle, fallbackLocaleDictionary, fallbackLocaleId, restrict,
+                            bundlePath);
                     }
 
-                    // just skip prev file
+                    // Bundle loaded successfully; skip JSON fallback for this mod.
                     continue;
                 }
                 catch (Exception bundleEx)
@@ -495,89 +389,24 @@ public class I18NEverywhere : IMod
                 }
             }
 
-            var current = Path.Combine(modInfo.Path, localeId + ".json");
-            if (File.Exists(current))
-            {
-                Logger.Info($"Load {Path.GetFileName(current)}");
-                try
-                {
-                    var currDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                        File.ReadAllText(current)) ?? new Dictionary<string, string>();
-                    foreach (var kv in currDict)
-                    {
-                        if (kv.Key is null || kv.Value is null)
-                        {
-                            Logger.WarnFormat("{0} have a null entry", bundlePath);
-                            continue;
-                        }
-                        if (currentLocaleDictionary.ContainsKey(kv.Key))
-                        {
-                            if (restrict)
-                            {
-                                Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
-                                continue;
-                            }
-
-                            Logger.Info($"{kv.Key} has been modified.");
-                            currentLocaleDictionary[kv.Key] = kv.Value;
-                        }
-                        else
-                        {
-                            currentLocaleDictionary.Add(kv.Key, kv.Value);
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Logger.Error(e);
-                }
-            }
+            // No bundle: try flat JSON files like {lang}/{localeId}.json.
+            LoadEmbedLocaleFromJson(currentLocaleDictionary, modInfo.Path, localeId, restrict);
 
             if (reloadFallback)
             {
-                var fallback = Path.Combine(modInfo.Path, fallbackLocaleId + ".json");
-                if (File.Exists(fallback))
-                {
-                    Logger.Info($"Load {Path.GetFileName(fallback)}");
-                    try
-                    {
-                        var fallbackDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
-                            File.ReadAllText(fallback)) ?? new Dictionary<string, string>();
-                        foreach (var kv in fallbackDict)
-                        {
-                            if (kv.Key is null || kv.Value is null)
-                            {
-                                Logger.WarnFormat("{0} have a null entry", bundlePath);
-                                continue;
-                            }
-                            if (fallbackLocaleDictionary.ContainsKey(kv.Key))
-                            {
-                                if (restrict)
-                                {
-                                    Logger.Warn($"{kv.Key}: overlap with existing key, skipped.");
-                                    continue;
-                                }
-
-                                Logger.Info($"{kv.Key}: has been modified.");
-                                fallbackLocaleDictionary[kv.Key] = kv.Value;
-                            }
-                            else
-                            {
-                                fallbackLocaleDictionary.Add(kv.Key, kv.Value);
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Logger.Error(e);
-                    }
-                }
+                LoadEmbedLocaleFromJson(fallbackLocaleDictionary, modInfo.Path, fallbackLocaleId, restrict);
             }
         }
 
         return true;
     }
 
+    /// <summary>
+    /// Phase 3: Load dedicated language pack mods (highest priority).
+    /// Each pack must have an i18n.json manifest in its parent directory.
+    /// Delegates to <see cref="LoadCentralizedLocales"/> with the pack's own path,
+    /// so packs follow the same bundle-first-then-directory loading strategy.
+    /// </summary>
     private static bool LoadLanguagePacks(
         Dictionary<string, string> currentLocaleDictionary,
         Dictionary<string, string> fallbackLocaleDictionary,
@@ -585,8 +414,9 @@ public class I18NEverywhere : IMod
         string fallbackLocaleId,
         bool reloadFallback)
     {
-        var restrict = Setting.Restrict;
-        var loadLanguagePacks = Setting.CanLoadLanguagePacks;
+        bool loadLanguagePacks = Setting.CanLoadLanguagePacks;
+
+        // Always build the status string for the settings UI, even if loading is disabled.
         Setting.LanguagePacksState = string.Empty;
         Setting.LanguagePacksState +=
             "There are language packs (The following will likely overwrite the text above, so please note the loading order):\n---\n";
@@ -596,12 +426,14 @@ public class I18NEverywhere : IMod
             return true;
         }
 
-        foreach (var modInfo in CachedLanguagePacks)
+        foreach (ModInfo modInfo in CachedLanguagePacks)
         {
             if (!modInfo.IsLanguagePack) continue;
 
-            var packDirectory = new DirectoryInfo(modInfo.Path);
-            var infoFile = Path.Combine(packDirectory.Parent.FullName, "i18n.json");
+            // i18n.json lives one level above the Localization/ directory.
+            DirectoryInfo packDirectory = new(modInfo.Path);
+            if (packDirectory.Parent == null) continue;
+            string infoFile = Path.Combine(packDirectory.Parent.FullName, "i18n.json");
             if (!File.Exists(infoFile))
             {
                 Logger.WarnFormat("{0} is broken, skip load.", modInfo.Name);
@@ -610,10 +442,11 @@ public class I18NEverywhere : IMod
 
             try
             {
-                var packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
+                LanguagePackInfo packInfo = JsonConvert.DeserializeObject<LanguagePackInfo>(File.ReadAllText(infoFile));
                 Setting.LanguagePacksState +=
                     $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
 
+                // Reuse centralized loading logic with the pack's own Localization/ path.
                 Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
                 LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId,
                     fallbackLocaleId, reloadFallback, modInfo.Path);
@@ -627,51 +460,58 @@ public class I18NEverywhere : IMod
         return true;
     }
 
+    #endregion
+
+    /// <summary>
+    /// Uses reflection to access PDX SDK internals and retrieve the active playset's enabled mods.
+    /// </summary>
     private static IEnumerable<Mod> TrickyGetActiveMods()
     {
-        var manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
-        var context =
+        PdxSdkPlatform manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
+        IContext context =
             (IContext)typeof(PdxSdkPlatform).GetField("m_SDKContext",
                 BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
-        var playsetResult = context.Mods.GetActivePlaysetEnabledMods().Result;
+        ModListResult playsetResult = context.Mods.GetActivePlaysetEnabledMods().Result;
         return !playsetResult.Success
             ? new List<Mod>()
             : playsetResult.Mods.Where(m => !string.IsNullOrEmpty(m.LocalData.FolderAbsolutePath));
     }
 
+    /// <summary>Removes entries with null keys or values that could cause NREs in the Harmony patch.</summary>
     private static void ValidateEntries()
     {
-        var keys = CurrentLocaleDictionary
+        List<string> keys = CurrentLocaleDictionary
             .Where(kv => kv.Key == null || kv.Value == null)
             .Select(kv => kv.Key)
             .ToList();
-        foreach (var key in keys)
-        {
-            CurrentLocaleDictionary.Remove(key);
-        }
-
-        var keysAgain = CurrentLocaleDictionary
-            .Where(kv => kv.Key == null || kv.Value == null)
-            .Select(kv => kv.Key)
-            .ToList();
-        foreach (var key in keysAgain)
+        foreach (string key in keys)
         {
             CurrentLocaleDictionary.Remove(key);
         }
     }
 
+    /// <summary>
+    /// Discovers all mods and classifies them into CachedMods vs CachedLanguagePacks.
+    /// New method scans three sources in order:
+    ///   1) ModsData/ - mod data directories (language packs only)
+    ///   2) Mods/     - local (development) mods
+    ///   3) PDX SDK   - subscribed workshop mods via <see cref="TrickyGetActiveMods"/>
+    /// Falls back to <see cref="LegacyCacheMods"/> on failure or if disabled in settings.
+    /// A mod is a language pack if it contains i18n.json; otherwise it's a regular mod.
+    /// </summary>
     private static void CacheMods()
     {
         if (Setting.UseNewModDetectMethod)
         {
             try
             {
+                // Source 1: ModsData/ - check for language packs whose name ends with "Localization".
                 if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "ModsData")))
                 {
-                    var modsData =
+                    DirectoryInfo[] modsData =
                         new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "ModsData")).GetDirectories("*",
                             SearchOption.TopDirectoryOnly);
-                    foreach (var info in modsData)
+                    foreach (DirectoryInfo info in modsData)
                     {
                         if (!info.Name.EndsWith("Localization", StringComparison.InvariantCulture))
                         {
@@ -692,11 +532,12 @@ public class I18NEverywhere : IMod
                     }
                 }
 
+                // Source 2: Mods/ - local mods (skip hidden/disabled directories starting with . or ~).
                 if (Directory.Exists(Path.Combine(EnvPath.kUserDataPath, "Mods")))
                 {
-                    var localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
+                    DirectoryInfo[] localMods = new DirectoryInfo(Path.Combine(EnvPath.kUserDataPath, "Mods")).GetDirectories();
 
-                    foreach (var localMod in localMods)
+                    foreach (DirectoryInfo localMod in localMods)
                     {
                         if (localMod.Name.StartsWith('.') || localMod.Name.StartsWith('~'))
                         {
@@ -719,16 +560,17 @@ public class I18NEverywhere : IMod
                     }
                 }
 
-                var mods = TrickyGetActiveMods();
+                // Source 3: PDX SDK subscribed mods (only Subscribed type, skip local duplicates).
+                IEnumerable<Mod> mods = TrickyGetActiveMods();
 
-                foreach (var mod in mods)
+                foreach (Mod mod in mods)
                 {
                     if (mod.LocalData.LocalType is not LocalType.Subscribed)
                     {
                         continue;
                     }
 
-                    var absolutePath = mod.LocalData.FolderAbsolutePath;
+                    string absolutePath = mod.LocalData.FolderAbsolutePath;
 
                     if (File.Exists(Path.Combine(absolutePath, "i18n.json")))
                     {
@@ -750,6 +592,7 @@ public class I18NEverywhere : IMod
             }
             catch (Exception trickyException)
             {
+                // Reflection-based detection failed; fall back to the safer legacy approach.
                 Logger.Error(trickyException, trickyException.Message);
                 LegacyCacheMods();
             }
@@ -764,22 +607,27 @@ public class I18NEverywhere : IMod
             string.Join("\n", CachedLanguagePacks.Select(x => $"\t\t{x.Name}")));
     }
 
+    /// <summary>
+    /// Fallback mod detection: iterates the game's own ModManager.
+    /// Simpler but cannot detect language packs (no i18n.json check) and may miss some mods.
+    /// Uses HashSet to deduplicate mods that appear multiple times in the manager.
+    /// </summary>
     private static void LegacyCacheMods()
     {
-        var set = new HashSet<ModInfo>();
+        HashSet<ModInfo> set = new();
         try
         {
-            foreach (var modInfo in GameManager.instance.modManager)
+            foreach (ModManager.ModInfo modInfo in GameManager.instance.modManager)
             {
                 // Skip harmony
                 if (modInfo.asset.name == "0Harmony") continue;
-                var modDir = Path.GetDirectoryName(modInfo.asset.path);
+                string modDir = Path.GetDirectoryName(modInfo.asset.path);
                 if (string.IsNullOrEmpty(modDir))
                 {
                     continue;
                 }
 
-                var info = new ModInfo { Name = modInfo.asset.name, Path = Path.Combine(modDir, "lang") };
+                ModInfo info = new() { Name = modInfo.asset.name, Path = Path.Combine(modDir, "lang") };
                 set.Add(info);
             }
         }
@@ -791,28 +639,33 @@ public class I18NEverywhere : IMod
         CachedMods = set.ToList();
     }
 
+    /// <summary>
+    /// Reloads only the current locale (not fallback) when the user switches language in-game.
+    /// Skipped before initial load is complete to avoid partial state.
+    /// </summary>
     private void ChangeCurrentLocale()
     {
         if (!GameLoaded) return;
-        var localeId = GameManager.instance.localizationManager.activeLocaleId;
-        var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+        string localeId = GameManager.instance.localizationManager.activeLocaleId;
+        string fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+        // reloadFallback=false: fallback (en-US) doesn't change on locale switch.
         if (!LoadLocales(localeId, fallbackLocaleId, false))
         {
             Logger.Error("Cannot reload locales.");
         }
     }
 
+    /// <summary>Adapter for the settings-applied event signature.</summary>
     private void ChangeCurrentLocale(Game.Settings.Setting s)
     {
-        if (!GameLoaded) return;
-        var localeId = GameManager.instance.localizationManager.activeLocaleId;
-        var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
-        if (!LoadLocales(localeId, fallbackLocaleId, false))
-        {
-            Logger.Error("Cannot reload locales.");
-        }
+        ChangeCurrentLocale();
     }
 
+    /// <summary>
+    /// Reflects into LocalizationManager internals to snapshot the game's own fallback locale sources.
+    /// Used by the settings UI to display what locale sources are registered (assets vs mod-provided).
+    /// Keyed as "[A]index: name" for LocaleAssets, "[M]index: typeName" for mod IDictionarySources.
+    /// </summary>
     public static void UpdateMods()
     {
         ModsFallbackDictionary.Clear();
@@ -821,18 +674,20 @@ public class I18NEverywhere : IMod
             return;
         }
 
-        var localeInfo =
+        // Reflect into LocalizationManager.m_LocaleInfos[fallbackLocaleId].m_Sources
+        // to enumerate all registered IDictionarySource instances for the fallback locale.
+        Type localeInfo =
             typeof(LocalizationManager).GetNestedType("LocaleInfo", BindingFlags.NonPublic);
-        var localeInfos = typeof(LocalizationManager)
+        object localeInfos = typeof(LocalizationManager)
             .GetField("m_LocaleInfos", BindingFlags.Instance | BindingFlags.NonPublic)
             ?.GetValue(GameManager.instance.localizationManager);
         if (localeInfos is not IDictionary dict) return;
-        var sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)
+        object sources = localeInfo.GetField("m_Sources", BindingFlags.Instance | BindingFlags.Public)
             ?.GetValue(dict[GameManager.instance.localizationManager.fallbackLocaleId]);
         if (sources is not IEnumerable enumerable) return;
-        var modCounter = 0;
-        var assetCounter = 0;
-        foreach (var o in enumerable)
+        int modCounter = 0;
+        int assetCounter = 0;
+        foreach (object o in enumerable)
         {
             if (o is LocaleAsset local)
             {
@@ -846,7 +701,6 @@ public class I18NEverywhere : IMod
 
     public void OnDispose()
     {
-        //Logger.Info(nameof(OnDispose));
         if (Setting != null)
         {
             Setting.UnregisterInOptionsUI();
@@ -879,14 +733,15 @@ public class I18NEverywhere : IMod
 
     private static bool InitWhenGameAvailable()
     {
+        // Keep polling until the game reaches a stable state.
         if (!GameManager.instance.modManager.isInitialized ||
             GameManager.instance.gameMode != GameMode.MainMenu ||
             GameManager.instance.state == GameManager.State.Loading ||
             GameManager.instance.state == GameManager.State.Booting
            ) return false;
 
-        var localeId = GameManager.instance.localizationManager.activeLocaleId;
-        var fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+        string localeId = GameManager.instance.localizationManager.activeLocaleId;
+        string fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
         Logger.Info("Init Load.");
         Logger.Info($"{nameof(localeId)}: {localeId}");
         Logger.Info($"{nameof(fallbackLocaleId)}: {fallbackLocaleId}");
@@ -900,11 +755,13 @@ public class I18NEverywhere : IMod
             Instance.InvokeEvent();
         }
 
+        // Guard: if already initialized (re-entry from event), just confirm completion.
         if (Instance.GameLoaded)
         {
             return true;
         }
 
+        // First-time initialization: notify user, snapshot game state, bump version.
         NotificationSystem.Pop("i18n-load", delay: 10f,
             titleId: "I18NEverywhere",
             textId: "I18NEverywhere.Detail",
@@ -914,6 +771,7 @@ public class I18NEverywhere : IMod
         UpdateMods();
         IncrementVersion();
         Logger.InfoFormat("I18NEverywhere initialized on {0}", GameManager.instance.gameMode);
+        // Return true to unregister this updater; polling is no longer needed.
         return true;
     }
 }

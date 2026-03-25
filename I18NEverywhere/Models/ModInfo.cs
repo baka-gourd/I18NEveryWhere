@@ -1,6 +1,8 @@
+using System;
+
 namespace I18NEverywhere.Models
 {
-    public class ModInfo
+    public class ModInfo : IEquatable<ModInfo>
     {
         public string Name { get; init; }
         public string Path { get; init; }
@@ -16,12 +18,14 @@ namespace I18NEverywhere.Models
             return other.Path == Path;
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is ModInfo other && Equals(other);
+        }
+
         public override int GetHashCode()
         {
-            unchecked
-            {
-                return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (Path != null ? Path.GetHashCode() : 0);
-            }
+            return Path != null ? Path.GetHashCode() : 0;
         }
     }
 }

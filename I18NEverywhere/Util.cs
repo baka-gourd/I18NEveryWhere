@@ -47,12 +47,6 @@ internal static class Util
             MigrateFile(oldLocation, correctLocation);
         }
 
-        // Handle FallbackSettings.coc
-        //var fallbackLocation = Path.Combine(EnvPath.kUserDataPath, "FallbackSettings.coc");
-        //if (File.Exists(fallbackLocation))
-        //{
-        //    MigrateFile(fallbackLocation, correctLocation);
-        //}
     }
 
     private static void MigrateMisMigratedSetting()
