@@ -1,5 +1,5 @@
-# 1.4.8
+# 1.4.9
 
-## Fixes
+## Feature
 
-- fix NRE in general
+- support new paradox mods sdk, players using version 1.5.7f1 must update

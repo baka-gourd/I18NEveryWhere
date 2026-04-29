@@ -20,9 +20,6 @@ using JetBrains.Annotations;
 
 using Newtonsoft.Json;
 
-using PDX.SDK.Contracts;
-using PDX.SDK.Contracts.Service.Mods.Enums;
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -30,8 +27,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using PDX.SDK.Contracts.Service.Mods.Result;
-using Mod = PDX.SDK.Contracts.Service.Mods.Models.Mod;
+
+using IMod = Game.Modding.IMod;
 
 namespace I18NEverywhere;
 
@@ -465,25 +462,24 @@ public class I18NEverywhere : IMod
     /// <summary>
     /// Uses reflection to access PDX SDK internals and retrieve the active playset's enabled mods.
     /// </summary>
-    private static IEnumerable<Mod> TrickyGetActiveMods()
+    private static HashSet<Mod> TrickyGetActiveMods()
     {
         PdxSdkPlatform manager = PlatformManager.instance.GetPSI<PdxSdkPlatform>("PdxSdk");
-        IContext context =
-            (IContext)typeof(PdxSdkPlatform).GetField("m_SDKContext",
-                BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(manager);
-        ModListResult playsetResult = context.Mods.GetActivePlaysetEnabledMods().Result;
-        return !playsetResult.Success
-            ? new List<Mod>()
-            : playsetResult.Mods.Where(m => !string.IsNullOrEmpty(m.LocalData.FolderAbsolutePath));
+
+        // PdxSdk now handle errors, they will return an empty HashSet when error. 
+        HashSet<Mod> playsetResult = manager.GetModsInActivePlayset()
+            .ConfigureAwait(false)
+            .GetAwaiter()
+            .GetResult();
+        return playsetResult;
     }
 
     /// <summary>Removes entries with null keys or values that could cause NREs in the Harmony patch.</summary>
     private static void ValidateEntries()
     {
-        List<string> keys = CurrentLocaleDictionary
+        List<string> keys = [.. CurrentLocaleDictionary
             .Where(kv => kv.Key == null || kv.Value == null)
-            .Select(kv => kv.Key)
-            .ToList();
+            .Select(kv => kv.Key)];
         foreach (string key in keys)
         {
             CurrentLocaleDictionary.Remove(key);
@@ -561,22 +557,17 @@ public class I18NEverywhere : IMod
                 }
 
                 // Source 3: PDX SDK subscribed mods (only Subscribed type, skip local duplicates).
-                IEnumerable<Mod> mods = TrickyGetActiveMods();
+                var mods = TrickyGetActiveMods();
 
                 foreach (Mod mod in mods)
                 {
-                    if (mod.LocalData.LocalType is not LocalType.Subscribed)
-                    {
-                        continue;
-                    }
-
-                    string absolutePath = mod.LocalData.FolderAbsolutePath;
+                    string absolutePath = Path.GetFullPath(mod.path);
 
                     if (File.Exists(Path.Combine(absolutePath, "i18n.json")))
                     {
                         CachedLanguagePacks.Add(new ModInfo
                         {
-                            Name = mod.DisplayName ?? mod.Name ?? absolutePath,
+                            Name = mod.displayName ?? absolutePath,
                             Path = Path.Combine(absolutePath, "Localization"),
                             IsLanguagePack = true
                         });
@@ -585,7 +576,7 @@ public class I18NEverywhere : IMod
 
                     CachedMods.Add(new ModInfo
                     {
-                        Name = mod.DisplayName ?? mod.Name ?? absolutePath,
+                        Name = mod.displayName ?? absolutePath,
                         Path = Path.Combine(absolutePath, "lang")
                     });
                 }
@@ -636,7 +627,7 @@ public class I18NEverywhere : IMod
             Logger.Error(modManagerException, modManagerException.Message);
         }
 
-        CachedMods = set.ToList();
+        CachedMods = [.. set];
     }
 
     /// <summary>
