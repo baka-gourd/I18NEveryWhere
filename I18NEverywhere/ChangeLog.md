@@ -1,5 +1,82 @@
-# 1.4.9
+# 1.5.0
 
-## Feature
+## Localization
 
-- support new paradox mods sdk, players using version 1.5.7f1 must update
+- ru-RU: upd RealisticPathFinding at 2026-06-13
+- zh-HANS: upd RealisticPathFinding at 2026-06-13
+- es-ES: upd AllAboard at 2026-06-10
+- es-ES: upd AssetVariationChanger at 2026-06-10
+- es-ES: upd DisableAccidents at 2026-06-10
+- es-ES: upd EmploymentTracker at 2026-06-10
+- es-ES: upd EventsController at 2026-06-10
+- es-ES: upd ExtendedTooltip at 2026-06-10
+- es-ES: upd RealLife at 2026-06-10
+- es-ES: upd RealisticParking at 2026-06-10
+- es-ES: upd SmartTransportation at 2026-06-10
+- es-ES: upd SuperFastBuildingAndLeveling at 2026-06-10
+- es-ES: upd TradingCostTweaker at 2026-06-10
+- zh-HANS: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- zh-HANS: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- es-ES: upd BridgeExpansionPack at 2026-06-07
+- es-ES: upd DomeParking at 2026-06-07
+- es-ES: upd TreeLinedRoadPack at 2026-06-07
+- es-ES: upd VibrantFoliagePack at 2026-06-07
+- es-ES: upd AirplaneParameterMod at 2026-06-07
+- es-ES: upd AllAboard at 2026-06-07
+- es-ES: upd AreaBucket at 2026-06-07
+- es-ES: upd AssetIconLibrary at 2026-06-07
+- es-ES: upd AssetPacksManager at 2026-06-07
+- es-ES: upd AssetUIManager at 2026-06-07
+- es-ES: upd AssetVariationChanger at 2026-06-07
+- es-ES: upd AutoVehicleRenamer at 2026-06-07
+- es-ES: upd BetterMoonLight at 2026-06-07
+- es-ES: upd BoundaryLinesModifier at 2026-06-07
+- es-ES: upd BrushSizeUnlimiter at 2026-06-07
+- es-ES: upd BuildingUsageTracker at 2026-06-07
+- es-ES: upd BuildingUse at 2026-06-07
+- es-ES: upd ChangeCompany at 2026-06-07
+- es-ES: upd CityServiceCapacityAdjuster at 2026-06-07
+- es-ES: upd CompanyBrandChanger at 2026-06-07
+- es-ES: upd CrowdedStation at 2026-06-07
+- es-ES: upd DemandMasterControl at 2026-06-07
+- es-ES: upd DepotCapacityChanger at 2026-06-07
+- es-ES: upd DetailedDescriptions at 2026-06-07
+- es-ES: upd DisableAccidents at 2026-06-07
+- es-ES: upd EmploymentTracker at 2026-06-07
+- es-ES: upd EvenBetterSaveList at 2026-06-07
+- es-ES: upd EventsController at 2026-06-07
+- es-ES: upd ExtendedTooltip at 2026-06-07
+- es-ES: upd HideBuildingNotification at 2026-06-07
+- es-ES: upd I18NEverywhere at 2026-06-07
+- es-ES: upd IBLIV at 2026-06-07
+- es-ES: upd MagicalHearse at 2026-06-07
+- es-ES: upd MapTextureReplacer at 2026-06-07
+- es-ES: upd NavigationView at 2026-06-07
+- es-ES: upd NoPollution at 2026-06-07
+- es-ES: upd ParkingPricing at 2026-06-07
+- es-ES: upd PrefabAssetFixes at 2026-06-07
+- es-ES: upd PrefabUpdateMod at 2026-06-07
+- es-ES: upd RealLife at 2026-06-07
+- es-ES: upd RealisticParking at 2026-06-07
+- es-ES: upd RealisticTrips at 2026-06-07
+- es-ES: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- es-ES: upd ResourceLocator at 2026-06-07
+- es-ES: upd RoadWearAdjuster at 2026-06-07
+- es-ES: upd SchoolCapacityBalancer at 2026-06-07
+- es-ES: upd ShowMoreHappiness at 2026-06-07
+- es-ES: upd SmartTransportation at 2026-06-07
+- es-ES: upd SmartUpkeepManager at 2026-06-07
+- es-ES: upd StifferVehicles at 2026-06-07
+- es-ES: upd SuperFastBuildingAndLeveling at 2026-06-07
+- es-ES: upd ToggleableOverlays at 2026-06-07
+- es-ES: upd TradingCostTweaker at 2026-06-07
+- es-ES: upd TrafficJamMonitor at 2026-06-07
+- es-ES: upd TransitCapacityMultiplier at 2026-06-07
+- es-ES: upd TransportPolicyAdjuster at 2026-06-07
+- es-ES: upd UrbanInequality at 2026-06-07
+- es-ES: upd VehicleController at 2026-06-07
+- es-ES: upd VehicleVariationPacks at 2026-06-07
+- es-ES: upd WaterVisualTweaksMod at 2026-06-07
+- es-ES: upd WhitenessToggle at 2026-06-07
+- es-ES: upd ZoneColorChanger at 2026-06-07
+- es-ES: upd ZoneOrganizer at 2026-06-07

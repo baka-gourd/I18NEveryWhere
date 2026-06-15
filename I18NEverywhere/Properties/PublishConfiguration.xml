@@ -76,13 +76,13 @@ Paratransz:
 Github:
 
 - en-US: TwotoolusFLY LSh.st, baka-gourd
-- es-ES: baka-gourd, elGendo87
+- es-ES: baka-gourd, elGendo87, github-actions[bot]
 - fr-FR: Dimitri, baka-gourd
-- ja-JP: baka-gourd
-- ko-KR: TwotoolusFLY LSh.st, baka-gourd
-- ru-RU: baka-gourd
-- zh-HANS: baka-gourd, 苏寅
-- zh-HANT: baka-gourd, v3921358, 歐東</LongDescription>
+- ja-JP: baka-gourd, github-actions[bot]
+- ko-KR: TwotoolusFLY LSh.st, baka-gourd, github-actions[bot]
+- ru-RU: baka-gourd, github-actions[bot]
+- zh-HANS: Ariadust, baka-gourd, github-actions[bot], 苏寅
+- zh-HANT: baka-gourd, github-actions[bot], v3921358, 歐東</LongDescription>
   <!--Thumbnail-->
   <Thumbnail Value="Properties/Thumbnail-1x1.png" />
   <!--Screenshot, can be set multiple times-->
@@ -92,18 +92,95 @@ Github:
   <!--Link to the forum post where the mod can be discussed-->
   <ForumLink Value="https://forum.paradoxplaza.com/forum/threads/i18n-everywhere.1646597/" />
   <!--Version of the mod-->
-  <ModVersion Value="1.4.8+build.2" />
+  <ModVersion Value="1.5.0+build.3" />
   <!--Recommended version of the base game to use the mod-->
   <GameVersion Value="1.5.*" />
   <!--Dependency for the mod, can be set multiple times-->
   <Dependency Id="" />
   <!--Change log for new version. Single line or multi line. Supports minimal markdown subset-->
   <!--<ChangeLog Value="" />-->
-  <ChangeLog># 1.4.8
+  <ChangeLog># 1.5.0
 
-## Fixes
+## Localization
 
-- fix NRE in general</ChangeLog>
+- ru-RU: upd RealisticPathFinding at 2026-06-13
+- zh-HANS: upd RealisticPathFinding at 2026-06-13
+- es-ES: upd AllAboard at 2026-06-10
+- es-ES: upd AssetVariationChanger at 2026-06-10
+- es-ES: upd DisableAccidents at 2026-06-10
+- es-ES: upd EmploymentTracker at 2026-06-10
+- es-ES: upd EventsController at 2026-06-10
+- es-ES: upd ExtendedTooltip at 2026-06-10
+- es-ES: upd RealLife at 2026-06-10
+- es-ES: upd RealisticParking at 2026-06-10
+- es-ES: upd SmartTransportation at 2026-06-10
+- es-ES: upd SuperFastBuildingAndLeveling at 2026-06-10
+- es-ES: upd TradingCostTweaker at 2026-06-10
+- zh-HANS: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- zh-HANS: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- es-ES: upd BridgeExpansionPack at 2026-06-07
+- es-ES: upd DomeParking at 2026-06-07
+- es-ES: upd TreeLinedRoadPack at 2026-06-07
+- es-ES: upd VibrantFoliagePack at 2026-06-07
+- es-ES: upd AirplaneParameterMod at 2026-06-07
+- es-ES: upd AllAboard at 2026-06-07
+- es-ES: upd AreaBucket at 2026-06-07
+- es-ES: upd AssetIconLibrary at 2026-06-07
+- es-ES: upd AssetPacksManager at 2026-06-07
+- es-ES: upd AssetUIManager at 2026-06-07
+- es-ES: upd AssetVariationChanger at 2026-06-07
+- es-ES: upd AutoVehicleRenamer at 2026-06-07
+- es-ES: upd BetterMoonLight at 2026-06-07
+- es-ES: upd BoundaryLinesModifier at 2026-06-07
+- es-ES: upd BrushSizeUnlimiter at 2026-06-07
+- es-ES: upd BuildingUsageTracker at 2026-06-07
+- es-ES: upd BuildingUse at 2026-06-07
+- es-ES: upd ChangeCompany at 2026-06-07
+- es-ES: upd CityServiceCapacityAdjuster at 2026-06-07
+- es-ES: upd CompanyBrandChanger at 2026-06-07
+- es-ES: upd CrowdedStation at 2026-06-07
+- es-ES: upd DemandMasterControl at 2026-06-07
+- es-ES: upd DepotCapacityChanger at 2026-06-07
+- es-ES: upd DetailedDescriptions at 2026-06-07
+- es-ES: upd DisableAccidents at 2026-06-07
+- es-ES: upd EmploymentTracker at 2026-06-07
+- es-ES: upd EvenBetterSaveList at 2026-06-07
+- es-ES: upd EventsController at 2026-06-07
+- es-ES: upd ExtendedTooltip at 2026-06-07
+- es-ES: upd HideBuildingNotification at 2026-06-07
+- es-ES: upd I18NEverywhere at 2026-06-07
+- es-ES: upd IBLIV at 2026-06-07
+- es-ES: upd MagicalHearse at 2026-06-07
+- es-ES: upd MapTextureReplacer at 2026-06-07
+- es-ES: upd NavigationView at 2026-06-07
+- es-ES: upd NoPollution at 2026-06-07
+- es-ES: upd ParkingPricing at 2026-06-07
+- es-ES: upd PrefabAssetFixes at 2026-06-07
+- es-ES: upd PrefabUpdateMod at 2026-06-07
+- es-ES: upd RealLife at 2026-06-07
+- es-ES: upd RealisticParking at 2026-06-07
+- es-ES: upd RealisticTrips at 2026-06-07
+- es-ES: upd RealisticWorkplacesAndHouseholds at 2026-06-07
+- es-ES: upd ResourceLocator at 2026-06-07
+- es-ES: upd RoadWearAdjuster at 2026-06-07
+- es-ES: upd SchoolCapacityBalancer at 2026-06-07
+- es-ES: upd ShowMoreHappiness at 2026-06-07
+- es-ES: upd SmartTransportation at 2026-06-07
+- es-ES: upd SmartUpkeepManager at 2026-06-07
+- es-ES: upd StifferVehicles at 2026-06-07
+- es-ES: upd SuperFastBuildingAndLeveling at 2026-06-07
+- es-ES: upd ToggleableOverlays at 2026-06-07
+- es-ES: upd TradingCostTweaker at 2026-06-07
+- es-ES: upd TrafficJamMonitor at 2026-06-07
+- es-ES: upd TransitCapacityMultiplier at 2026-06-07
+- es-ES: upd TransportPolicyAdjuster at 2026-06-07
+- es-ES: upd UrbanInequality at 2026-06-07
+- es-ES: upd VehicleController at 2026-06-07
+- es-ES: upd VehicleVariationPacks at 2026-06-07
+- es-ES: upd WaterVisualTweaksMod at 2026-06-07
+- es-ES: upd WhitenessToggle at 2026-06-07
+- es-ES: upd ZoneColorChanger at 2026-06-07
+- es-ES: upd ZoneOrganizer at 2026-06-07</ChangeLog>
   <!--External link. supported types are discord, github, youtube, twitch, x, paypal, patreon-->
   <ExternalLink Type="github" Url="https://github.com/baka-gourd/I18NEveryWhere" />
   <ExternalLink Type="buymeacoffee" Url="https://buymeacoffee.com/nullpinter" />

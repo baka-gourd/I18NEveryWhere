@@ -67,10 +67,10 @@ Paratransz:
 Github:
 
 - en-US: TwotoolusFLY LSh.st, baka-gourd
-- es-ES: baka-gourd, elGendo87
+- es-ES: baka-gourd, elGendo87, github-actions[bot]
 - fr-FR: Dimitri, baka-gourd
-- ja-JP: baka-gourd
-- ko-KR: TwotoolusFLY LSh.st, baka-gourd
-- ru-RU: baka-gourd
-- zh-HANS: baka-gourd, 苏寅
-- zh-HANT: baka-gourd, v3921358, 歐東
+- ja-JP: baka-gourd, github-actions[bot]
+- ko-KR: TwotoolusFLY LSh.st, baka-gourd, github-actions[bot]
+- ru-RU: baka-gourd, github-actions[bot]
+- zh-HANS: Ariadust, baka-gourd, github-actions[bot], 苏寅
+- zh-HANT: baka-gourd, github-actions[bot], v3921358, 歐東

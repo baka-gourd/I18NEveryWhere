@@ -61,7 +61,7 @@ public class I18NEverywhere : IMod
     {
         Instance = this;
         Logger.keepStreamOpen = true;
-        Logger.Info(nameof(OnLoad));
+        Logger.Info("I18NEverywhere now loading...");
 
         if (GameManager.instance.modManager.TryGetExecutableAsset(this, out ExecutableAsset asset))
         {
@@ -104,7 +104,7 @@ public class I18NEverywhere : IMod
     /// <param name="reloadFallback">False on locale-switch events (fallback rarely changes).</param>
     public static bool LoadLocales(string localeId, string fallbackLocaleId, bool reloadFallback = true)
     {
-        Logger.Info("Loading locales...");
+        Logger.Debug("Loading locales...");
 
         try
         {
@@ -133,7 +133,7 @@ public class I18NEverywhere : IMod
             Logger.Error(e, $"You can ignore this error and continue. Need investigating.\n{e.Message}");
         }
 
-        Logger.Info("Locales loaded.");
+        Logger.Debug("Locales loaded.");
         return true;
     }
 
@@ -162,11 +162,11 @@ public class I18NEverywhere : IMod
             {
                 if (restrict)
                 {
-                    Logger.Warn($"{kv.Key}: overlap, skipped.");
+                    Logger.Debug($"{kv.Key}: overlap, skipped.");
                     continue;
                 }
 
-                Logger.Info($"{kv.Key}: overwritten.");
+                Logger.Debug($"{kv.Key}: overwritten.");
                 target[kv.Key] = kv.Value;
             }
             else
@@ -186,7 +186,7 @@ public class I18NEverywhere : IMod
         bool restrict,
         string bundlePath)
     {
-        Logger.Info($"Load {localeId} from {bundlePath}");
+        Logger.Debug($"Load {localeId} from {bundlePath}");
         try
         {
             Dictionary<string, string> dict = bundle.ReadContent(localeId);
@@ -213,7 +213,7 @@ public class I18NEverywhere : IMod
             return;
         }
 
-        Logger.Info($"Loading locale directory: {localeDir}");
+        Logger.Debug($"Loading locale directory: {localeDir}");
         FileInfo[] files = new DirectoryInfo(localeDir).GetFiles("*.json", SearchOption.AllDirectories);
         foreach (FileInfo file in files)
         {
@@ -246,7 +246,7 @@ public class I18NEverywhere : IMod
             return;
         }
 
-        Logger.Info($"Load {Path.GetFileName(filePath)}");
+        Logger.Debug($"Load {Path.GetFileName(filePath)}");
         try
         {
             Dictionary<string, string> dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(
@@ -292,7 +292,7 @@ public class I18NEverywhere : IMod
             try
             {
                 using LanguageBundle bundle = LanguageBundle.ReadBundle(bundlePath);
-                Logger.Info($"Loaded bundle: {bundlePath} (IsCentralized={bundle.IsCentralized})");
+                Logger.Debug($"Loaded bundle: {bundlePath} (IsCentralized={bundle.IsCentralized})");
 
                 // Case-insensitive match: centralized bundles may use different casing than the game.
                 if (bundle.IncludedLanguage.Contains(localeId, StringComparer.InvariantCultureIgnoreCase))
@@ -354,7 +354,7 @@ public class I18NEverywhere : IMod
             }
             else
             {
-                Logger.Info($"Load \"{modInfo.Name}\"'s localization files.");
+                Logger.Debug($"Load \"{modInfo.Name}\"'s localization files.");
             }
 
             // If this mod ships a bundle, use it exclusively and skip JSON fallback.
@@ -364,7 +364,7 @@ public class I18NEverywhere : IMod
                 try
                 {
                     using LanguageBundle bundle = LanguageBundle.ReadBundle(bundlePath);
-                    Logger.Info($"Loaded bundle: {bundlePath} (contains {bundle.IncludedLanguage.Length} entries)");
+                    Logger.Debug($"Loaded bundle: {bundlePath} (contains {bundle.IncludedLanguage.Length} entries)");
 
                     if (bundle.IncludedLanguage.Contains(localeId))
                     {
@@ -444,7 +444,7 @@ public class I18NEverywhere : IMod
                     $"{packInfo.Name} by {packInfo.Author}\n\tDescription: {packInfo.Description}\n\tIncluded language: {packInfo.IncludedLanguage}\n---\n";
 
                 // Reuse centralized loading logic with the pack's own Localization/ path.
-                Logger.InfoFormat("Load language pack: {0}", packInfo.Name);
+                Logger.DebugFormat("Load language pack: {0}", packInfo.Name);
                 LoadCentralizedLocales(currentLocaleDictionary, fallbackLocaleDictionary, localeId,
                     fallbackLocaleId, reloadFallback, modInfo.Path);
             }
@@ -639,11 +639,13 @@ public class I18NEverywhere : IMod
         if (!GameLoaded) return;
         string localeId = GameManager.instance.localizationManager.activeLocaleId;
         string fallbackLocaleId = GameManager.instance.localizationManager.fallbackLocaleId;
+        Logger.Info("Game/Mods triggered reload locale, reloading...");
         // reloadFallback=false: fallback (en-US) doesn't change on locale switch.
         if (!LoadLocales(localeId, fallbackLocaleId, false))
         {
-            Logger.Error("Cannot reload locales.");
+            Logger.Error("Cannot reload locales");
         }
+        Logger.Info("Reloaded");
     }
 
     /// <summary>Adapter for the settings-applied event signature.</summary>
